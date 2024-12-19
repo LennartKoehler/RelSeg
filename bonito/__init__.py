@@ -1,15 +1,18 @@
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 from bonito.cli import basecaller, download, duplex, evaluate, export, train, view
-
 modules = [
     'basecaller', 'download', 'duplex', 'evaluate', 'export', 'train', 'view',
 ]
 
 __version__ = '0.8.1'
 
+# import multiprocessing
+# multiprocessing.set_start_method("spawn")
+
 
 def main():
+
     parser = ArgumentParser('bonito', formatter_class=ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(

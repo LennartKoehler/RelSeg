@@ -8,6 +8,7 @@ from pathlib import Path
 from itertools import chain
 from functools import partial
 from multiprocessing import Pool
+import multiprocessing
 from datetime import timedelta, timezone
 
 import numpy as np
@@ -106,7 +107,7 @@ def get_meta_data(filename, read_ids=None, skip=False):
         return meta_reads
 
 
-def get_read_groups(directory, model, read_ids=None, skip=False, n_proc=1, recursive=False, cancel=None):
+def get_read_groups(directory, model, read_ids=None, skip=False, n_proc=0, recursive=False, cancel=None):
     """
     Get all the read meta data for a given `directory`.
     """
@@ -169,6 +170,7 @@ def get_reads(directory, read_ids=None, skip=False, n_proc=1, recursive=False, c
     get_raw_data = partial(get_raw_data_for_read, do_trim=do_trim, scaling_strategy=scaling_strategy, norm_params=norm_params)
     reads = (Path(x) for x in glob(directory + "/" + pattern, recursive=True))
     with Pool(n_proc) as pool:
+        multiprocessing.current_process().name = 'reader_process'
         for job in chain(pool.imap(get_filtered_reads, reads)):
             for read in pool.imap(get_raw_data, job):
                 yield read

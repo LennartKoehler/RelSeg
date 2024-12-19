@@ -6,7 +6,7 @@ import torch
 import numpy as np
 from koi.decode import beam_search, to_str
 
-from bonito.multiprocessing import thread_iter
+from bonito.multiprocessing_bonito import thread_iter
 from bonito.util import chunk, stitch, batchify, unbatchify, half_supported
 
 
@@ -31,7 +31,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     with torch.inference_mode():
         device = next(model.parameters()).device
         dtype = torch.float16 if half_supported() else torch.float32
-        scores = model(batch.to(dtype).to(device))
+        scores = model(batch.to(dtype).to(device)) # IMPORTANT here the neural network is run
         if reverse:
             scores = model.seqdist.reverse_complement(scores)
         with torch.cuda.device(scores.device):
@@ -52,7 +52,7 @@ def fmt(stride, attrs, rna=False):
         'stride': stride,
         'moves': attrs['moves'].numpy(),
         'qstring': fliprna(to_str(attrs['qstring'])),
-        'sequence': fliprna(to_str(attrs['sequence'])),
+        'sequence': fliprna(to_str(attrs['sequence'])), #IMPORTANT here int goes to ascii (ACGT)
     }
 
 
@@ -61,23 +61,44 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32,
     """
     Basecalls a set of reads.
     """
-    chunks = thread_iter(
+
+    chunks = (
         ((read, 0, read.signal.shape[-1]), chunk(torch.from_numpy(read.signal), chunksize, overlap))
         for read in reads
     )
 
-    batches = thread_iter(batchify(chunks, batchsize=batchsize))
+    batches = (batchify(chunks, batchsize=batchsize))
 
-    scores = thread_iter(
+    scores = (
         (read, compute_scores(model, batch, reverse=reverse)) for read, batch in batches
     )
 
-    results = thread_iter(
+    results = (
         (read, stitch_results(scores, end - start, chunksize, overlap, model.stride, reverse))
         for ((read, start, end), scores) in unbatchify(scores)
     )
 
-    return thread_iter(
+    return (
         (read, fmt(model.stride, attrs, rna))
         for read, attrs in results
     )
+    # chunks = thread_iter(
+    #     ((read, 0, read.signal.shape[-1]), chunk(torch.from_numpy(read.signal), chunksize, overlap))
+    #     for read in reads
+    # )
+
+    # batches = thread_iter(batchify(chunks, batchsize=batchsize))
+
+    # scores = thread_iter(
+    #     (read, compute_scores(model, batch, reverse=reverse)) for read, batch in batches
+    # )
+
+    # results = thread_iter(
+    #     (read, stitch_results(scores, end - start, chunksize, overlap, model.stride, reverse))
+    #     for ((read, start, end), scores) in unbatchify(scores)
+    # )
+
+    # return thread_iter(
+    #     (read, fmt(model.stride, attrs, rna))
+    #     for read, attrs in results
+    # )

@@ -18,7 +18,7 @@ from bonito.reader import read_chunks, Reader
 from bonito.io import CTCWriter, Writer, biofmt
 from bonito.mod_util import call_mods, load_mods_model
 from bonito.cli.download import Downloader, models, __models_dir__
-from bonito.multiprocessing import process_cancel, process_itemmap
+from bonito.multiprocessing_bonito import process_cancel, process_itemmap
 from bonito.util import column_to_set, load_symbol, load_model, init, tqdm_environ
 
 
@@ -96,7 +96,7 @@ def main(args):
     if fmt.name != 'fastq':
         groups, num_reads = reader.get_read_groups(
             args.reads_directory, args.model_directory,
-            n_proc=8, recursive=args.recursive,
+            n_proc=1, recursive=args.recursive,
             read_ids=column_to_set(args.read_ids), skip=args.skip,
             cancel=process_cancel()
         )
@@ -105,7 +105,7 @@ def main(args):
         num_reads = None
 
     reads = reader.get_reads(
-        args.reads_directory, n_proc=8, recursive=args.recursive,
+        args.reads_directory, n_proc=1, recursive=args.recursive,
         read_ids=column_to_set(args.read_ids), skip=args.skip,
         do_trim=not args.no_trim,
         scaling_strategy=model.config.get("scaling"),
@@ -171,8 +171,10 @@ def main(args):
         **writer_kwargs)
 
     t0 = perf_counter()
-    writer.start()
-    writer.join()
+    #CHANGE
+    # writer.start()
+    # writer.join()
+    writer.run()
     duration = perf_counter() - t0
     num_samples = sum(num_samples for read_id, num_samples in writer.log)
 

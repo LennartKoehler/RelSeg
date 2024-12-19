@@ -397,13 +397,12 @@ class NullWriter(Thread):
             self.log.append((read_id, samples))
 
 
-class Writer(Thread):
+class Writer():
 
     def __init__(
             self, mode, iterator, aligner, fd=sys.stdout,
             ref_fn=None, groups=None, group_key=None, min_qscore=0
     ):
-        super().__init__()
         self.fd = fd
         self.log = []
         self.mode = mode
@@ -469,7 +468,7 @@ class Writer(Thread):
                     logger.warn("> skipping empty sequence %s", read_id)
 
 
-class DuplexWriter(Writer, Thread):
+class DuplexWriter(Writer):
 
     def run(self):
         for read, res in self.iterator:
@@ -510,7 +509,7 @@ class RejectCounter(dict):
         return reject_condition
 
 
-class CTCWriter(Thread):
+class CTCWriter():
     """
     CTC writer process that writes output numpy training data.
     """
@@ -519,7 +518,6 @@ class CTCWriter(Thread):
             min_accuracy=0.99, ref_fn=None, groups=None, group_key=None,
             min_qscore=None, rna=False
     ):
-        super().__init__()
         self.fd = fd
         self.log = []
         self.mode = mode

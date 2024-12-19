@@ -6,7 +6,7 @@ import torch
 import numpy as np
 from functools import partial
 
-from bonito.multiprocessing import process_map
+from bonito.multiprocessing_bonito import process_map
 from bonito.util import mean_qscore_from_qstring
 from bonito.util import chunk, stitch, batchify, unbatchify, permute
 
@@ -25,7 +25,7 @@ def basecall(model, reads, beamsize=5, chunksize=0, overlap=0, batchsize=1, qsco
         (read, {'scores': stitch(v, chunksize, overlap, len(read.signal), model.stride)}) for read, v in scores
     )
     decoder = partial(decode, decode=model.decode, beamsize=beamsize, qscores=qscores, stride=model.stride)
-    basecalls = process_map(decoder, scores, n_proc=4)
+    basecalls = process_map(decoder, scores, n_proc=1)
     return basecalls
 
 

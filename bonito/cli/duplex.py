@@ -16,7 +16,7 @@ from parasail import dnafull, sg_trace_scan_32
 
 from bonito.io import DuplexWriter, biofmt
 from bonito.aligner import align_map, Aligner
-from bonito.multiprocessing import ProcessMap
+from bonito.multiprocessing_bonito import ProcessMap
 from bonito.util import tqdm_environ
 
 

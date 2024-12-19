@@ -5,7 +5,7 @@ from threading import Thread
 from functools import partial
 from mappy import Aligner, ThreadBuffer
 
-from bonito.multiprocessing import ThreadMap
+from bonito.multiprocessing_bonito import ThreadMap
 
 
 def align_map(aligner, sequences, n_thread=4):

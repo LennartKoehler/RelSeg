@@ -10,14 +10,15 @@ from signal import signal, SIGINT
 from multiprocessing import Process, Queue, Event
 
 
-def process_iter(iterator, maxsize=1):
+
+def process_iter(iterator, maxsize=0):
     """
     Take an iterator and run it on another process.
     """
     return iter(ProcessIterator(iterator, maxsize=maxsize))
 
 
-def thread_iter(iterator, maxsize=1):
+def thread_iter(iterator, maxsize=0):
     """
     Take an iterator and run it on another thread.
     """
@@ -33,7 +34,7 @@ def process_cancel():
     return event
 
 
-def process_map(func, iterator, n_proc=4, maxsize=2):
+def process_map(func, iterator, n_proc=0, maxsize=2):
     """
     Take an `iterator` of key, value pairs and apply `func` to all values using `n_proc` processes.
     """
@@ -41,7 +42,7 @@ def process_map(func, iterator, n_proc=4, maxsize=2):
     return iter(ProcessMap(func, iterator, n_proc, output_queue=Queue(maxsize)))
 
 
-def process_itemmap(func, iterator, n_proc=4, maxsize=2):
+def process_itemmap(func, iterator, n_proc=0, maxsize=2):
     """
     Take an `iterator` of key, value pairs and apply `func` to all (key, values) using `n_proc` processes.
     """
@@ -56,7 +57,7 @@ def process_itemmap(func, iterator, n_proc=4, maxsize=2):
     )
 
 
-def thread_map(func, iterator, n_thread=4, maxsize=2):
+def thread_map(func, iterator, n_thread=0, maxsize=2):
     """
     Take an `iterator` of key, value pairs and apply `func` to all values using `n_thread` threads.
     """
@@ -66,7 +67,7 @@ def thread_map(func, iterator, n_thread=4, maxsize=2):
     )
 
 
-def thread_itemmap(func, iterator, n_thread=4, maxsize=2):
+def thread_itemmap(func, iterator, n_thread=0, maxsize=2):
     """
     Take an `iterator` of key, value pairs and apply `func` to all (key, values) using `n_thread` threads.
     """
@@ -79,7 +80,7 @@ def thread_itemmap(func, iterator, n_thread=4, maxsize=2):
     )
 
 
-def thread_starmap(func, iterator, n_thread=4, maxsize=2):
+def thread_starmap(func, iterator, n_thread=0, maxsize=2):
     """
     Take an `iterator` of key, value pairs and apply `func` to all values using `n_thread` threads.
     """
@@ -93,7 +94,7 @@ class BackgroundIterator:
     """
     Runs an iterator in the background.
     """
-    def __init__(self, iterator, maxsize=10):
+    def __init__(self, iterator, maxsize=0):
         super().__init__()
         self.iterator = iterator
         self.queue = self.QueueClass(maxsize)
