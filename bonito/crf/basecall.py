@@ -35,7 +35,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         if reverse:
             scores = model.seqdist.reverse_complement(scores)
         with torch.cuda.device(scores.device):
-            sequence, qstring, moves = beam_search(
+            sequence, qstring, moves = beam_search( # IMPORTANT this is where the actual sequence is determined from the nn scores
                 scores, beam_width=beam_width, beam_cut=beam_cut,
                 scale=scale, offset=offset, blank_score=blank_score
             )
@@ -61,7 +61,6 @@ def basecall(model, reads, chunksize=4000, overlap=100, batchsize=32,
     """
     Basecalls a set of reads.
     """
-
     chunks = (
         ((read, 0, read.signal.shape[-1]), chunk(torch.from_numpy(read.signal), chunksize, overlap))
         for read in reads
