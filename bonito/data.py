@@ -61,7 +61,7 @@ def load_numpy_datasets(limit=None, directory=None):
     Returns numpy chunks, targets and lengths arrays.
     """
     if directory is None:
-        directory = default_data
+        directory = data
 
     chunks = np.load(os.path.join(directory, "chunks.npy"), mmap_mode='r')
     targets = np.load(os.path.join(directory, "references.npy"), mmap_mode='r')

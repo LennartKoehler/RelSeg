@@ -1,2 +1,2 @@
-from .model import Model
+from .model_modified import Model
 from .basecall import basecall

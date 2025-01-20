@@ -24,7 +24,7 @@ def main(args):
     channels = 1
     print(model)
     print("Total parameters in model", sum(p.numel() for p in model.parameters()))
-    #visualize(model, (batchsize, channels, chunksize))
+    visualize(model, (batchsize, channels, chunksize))
 
 def test_main(config):
     if os.path.isdir(config):

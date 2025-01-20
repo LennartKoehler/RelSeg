@@ -1,1 +1,3 @@
 the beamsearch is probably used on the crf to find the best combination of sequences, the nn outputs a value for the probability (not really probability) of each datapoint (downsampled a bit) being a specific kmer. Through this matrix the path with the highest total probability is chosen through beam search, as i understand it
+
+the result of the beam search is a sequence of int, there are only five relevant ints which are the int for the ascii of ACGTN

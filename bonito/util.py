@@ -251,6 +251,8 @@ def match_names(state_dict, model):
     ])
     k1, s1 = keys_and_shapes(state_dict)
     k2, s2 = keys_and_shapes(model.state_dict())
+    # for s1,k1,s2,k2 in zip(s1,k2,s2,k2):
+    #     print(s1,s2,"\n",k1,k2,"\n")
     assert s1 == s2
     remap = dict(zip(k1, k2))
     return OrderedDict([(k, remap[k]) for k in state_dict.keys()])

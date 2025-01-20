@@ -140,6 +140,7 @@ class MakeContiguous(Module):
 class LinearUpsample(Module):
     """
     Applies a linear transformation to upsample the sequence length by ``scale_factor``.
+    IMPORTANT this increases sequence length not dimension
     """
 
     def __init__(self, d_model, scale_factor, batch_first=True):
@@ -283,18 +284,20 @@ class LinearCRFEncoder(Module):
     def forward(self, x):
         if self.permute is not None:
             x = x.permute(*self.permute)
-        scores = self.linear(x)
+        scores = self.linear(x) #IMPORTANT this linear layer makes every single value negative. this must have something to do with the beamsearch afterwards and the training
         if self.activation is not None:
             scores = self.activation(scores)
         if self.scale is not None:
             scores = scores * self.scale
-        if self.blank_score is not None and self.expand_blanks:
+        if self.blank_score is not None and self.expand_blanks: # this adds the "empty/skip" base filled with blank scores: ACTG -> ACGTN
             T, N, C = scores.shape
+            scores_view = scores.view(T, N, C // self.n_base, self.n_base)
             scores = torch.nn.functional.pad(
-                scores.view(T, N, C // self.n_base, self.n_base),
+                scores_view,
                 (1, 0, 0, 0, 0, 0, 0, 0),
                 value=self.blank_score
-            ).view(T, N, -1)
+            )
+            scores = scores.view(T, N, -1)
         return scores
 
     def to_dict(self, include_weights=False):

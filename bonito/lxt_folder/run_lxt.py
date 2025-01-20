@@ -21,6 +21,8 @@ from bonito.cli.download import Downloader, models, __models_dir__
 from bonito.multiprocessing_bonito import process_cancel, process_itemmap
 from bonito.util import column_to_set, load_symbol, load_model, init, tqdm_environ
 
+from bonito.lxt_folder.register import run_lxt
+
 
 def main(args):
 
@@ -138,50 +140,51 @@ def main(args):
     else:
         ResultsWriter = Writer
 
-    results = basecall(
-        model, reads, reverse=args.revcomp, rna=args.rna,
-        batchsize=model.config["basecaller"]["batchsize"],
-        chunksize=model.config["basecaller"]["chunksize"],
-        overlap=model.config["basecaller"]["overlap"]
-    )
+    run_lxt(model, reads)
+    # results = basecall(
+    #     model, reads, reverse=args.revcomp, rna=args.rna,
+    #     batchsize=model.config["basecaller"]["batchsize"],
+    #     chunksize=model.config["basecaller"]["chunksize"],
+    #     overlap=model.config["basecaller"]["overlap"]
+    # )
     
-    if mods_model is not None:
-        if args.modified_device:
-            results = ((k, call_mods(mods_model, k, v)) for k, v in results)
-        else:
-            results = process_itemmap(
-                partial(call_mods, mods_model), results, n_proc=args.modified_procs
-            )
-    if aligner:
-        results = align_map(aligner, results, n_thread=args.alignment_threads)
+    # if mods_model is not None:
+    #     if args.modified_device:
+    #         results = ((k, call_mods(mods_model, k, v)) for k, v in results)
+    #     else:
+    #         results = process_itemmap(
+    #             partial(call_mods, mods_model), results, n_proc=args.modified_procs
+    #         )
+    # if aligner:
+    #     results = align_map(aligner, results, n_thread=args.alignment_threads)
 
-    writer_kwargs = {'aligner': aligner,
-                     'group_key': args.model_directory,
-                     'ref_fn': args.reference,
-                     'groups': groups,
-                     'min_qscore': args.min_qscore}
-    if args.save_ctc:
-        writer_kwargs['rna'] = args.rna
-        writer_kwargs['min_accuracy'] = args.min_accuracy_save_ctc
+    # writer_kwargs = {'aligner': aligner,
+    #                  'group_key': args.model_directory,
+    #                  'ref_fn': args.reference,
+    #                  'groups': groups,
+    #                  'min_qscore': args.min_qscore}
+    # if args.save_ctc:
+    #     writer_kwargs['rna'] = args.rna
+    #     writer_kwargs['min_accuracy'] = args.min_accuracy_save_ctc
         
-    writer = ResultsWriter(
-        fmt.mode, tqdm(results, desc="> calling", unit=" reads", leave=False,
-                       total=num_reads, smoothing=0, ascii=True, ncols=100,
-                       **tqdm_environ()),
-        **writer_kwargs)
+    # writer = ResultsWriter(
+    #     fmt.mode, tqdm(results, desc="> calling", unit=" reads", leave=False,
+    #                    total=num_reads, smoothing=0, ascii=True, ncols=100,
+    #                    **tqdm_environ()),
+    #     **writer_kwargs)
 
-    t0 = perf_counter()
-    #CHANGE
-    # writer.start()
-    # writer.join()
-    writer.run()
-    duration = perf_counter() - t0
-    num_samples = sum(num_samples for read_id, num_samples in writer.log)
+    # t0 = perf_counter()
+    # #CHANGE
+    # # writer.start()
+    # # writer.join()
+    # writer.run()
+    # duration = perf_counter() - t0
+    # num_samples = sum(num_samples for read_id, num_samples in writer.log)
 
-    sys.stderr.write("> completed reads: %s\n" % len(writer.log))
-    sys.stderr.write("> duration: %s\n" % timedelta(seconds=np.round(duration)))
-    sys.stderr.write("> samples per second %.1E\n" % (num_samples / duration))
-    sys.stderr.write("> done\n")
+    # sys.stderr.write("> completed reads: %s\n" % len(writer.log))
+    # sys.stderr.write("> duration: %s\n" % timedelta(seconds=np.round(duration)))
+    # sys.stderr.write("> samples per second %.1E\n" % (num_samples / duration))
+    # sys.stderr.write("> done\n")
 
 
 def argparser():

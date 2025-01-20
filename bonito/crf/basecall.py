@@ -5,6 +5,7 @@ Bonito CRF basecalling
 import torch
 import numpy as np
 from koi.decode import beam_search, to_str
+from torch.utils.tensorboard import SummaryWriter
 
 from bonito.multiprocessing_bonito import thread_iter
 from bonito.util import chunk, stitch, batchify, unbatchify, half_supported
@@ -28,12 +29,19 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     """
     Compute scores for model.
     """
+    #writer = SummaryWriter('tensorboard_out')
+
     with torch.inference_mode():
         device = next(model.parameters()).device
         dtype = torch.float16 if half_supported() else torch.float32
+        #with torch.no_grad(): # TESTVALUE
         scores = model(batch.to(dtype).to(device)) # IMPORTANT here the neural network is run
+        # writer.add_graph(model, batch.to(dtype).to(device)) #IMPORTANT tracing for tensorboard doesnt work with flashattn
+        # writer.close()
+
         if reverse:
             scores = model.seqdist.reverse_complement(scores)
+        #seq_val = model.decode_batch(scores) #TESTVALUE test
         with torch.cuda.device(scores.device):
             sequence, qstring, moves = beam_search( # IMPORTANT this is where the actual sequence is determined from the nn scores
                 scores, beam_width=beam_width, beam_cut=beam_cut,
@@ -52,7 +60,7 @@ def fmt(stride, attrs, rna=False):
         'stride': stride,
         'moves': attrs['moves'].numpy(),
         'qstring': fliprna(to_str(attrs['qstring'])),
-        'sequence': fliprna(to_str(attrs['sequence'])), #IMPORTANT here int goes to ascii (ACGT)
+        'sequence': fliprna(to_str(attrs['sequence'])), #IMPORTANT here int is translated to ascii (ACGT)
     }
 
 
