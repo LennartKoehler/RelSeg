@@ -36,9 +36,8 @@ class CTC_CRF(SequenceDist):
         self.n_base = len(alphabet[1:])
         self.idx = torch.cat([
             torch.arange(self.n_base**(self.state_len))[:, None],
-            torch.arange(
-                self.n_base**(self.state_len)
-            ).repeat_interleave(self.n_base).reshape(self.n_base, -1).T
+            torch.arange(self.n_base**(self.state_len))
+            .repeat_interleave(self.n_base).reshape(self.n_base, -1).T
         ], dim=1).to(torch.int32)
 
     def n_score(self):
@@ -49,7 +48,8 @@ class CTC_CRF(SequenceDist):
         Ms = scores.reshape(T, N, -1, len(self.alphabet))
         alpha_0 = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
         beta_T = Ms.new_full((N, self.n_base**(self.state_len)), S.one)
-        return logZ_cu_sparse(Ms, self.idx, alpha_0, beta_T, S)
+        result = logZ_cu_sparse(Ms, self.idx, alpha_0, beta_T, S)
+        return result
 
     def normalise(self, scores):
         return (scores - self.logZ(scores)[:, None] / len(scores))
@@ -97,10 +97,10 @@ class CTC_CRF(SequenceDist):
 
     def viterbi(self, scores):
         traceback = self.posteriors(scores, Max)
-        a_traceback = traceback.argmax(2)
-        moves = (a_traceback % len(self.alphabet)) != 0
-        paths = 1 + (torch.div(a_traceback, len(self.alphabet), rounding_mode="floor") % self.n_base)
-        return torch.where(moves, paths, 0)
+        a_traceback = traceback.argmax(2) #IMPORTANT take a_traceback (index of kmer (or base))
+        moves = (a_traceback % len(self.alphabet)) != 0 # moves are true for argmax is ACGT and false if argmax is N
+        paths = 1 + (torch.div(a_traceback, len(self.alphabet), rounding_mode="floor") % self.n_base) # return which of the 4 bases
+        return torch.where(moves, paths, 0) # only get base when move TRUE -> move != 0
 
     def path_to_str(self, path):
         alphabet = np.frombuffer(''.join(self.alphabet).encode(), dtype='u1')

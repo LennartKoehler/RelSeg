@@ -296,7 +296,7 @@ class LinearCRFEncoder(Module):
                 scores_view,
                 (1, 0, 0, 0, 0, 0, 0, 0),
                 value=self.blank_score
-            )
+            ) # -> (T, N, C // self.n_base, self.n_base+1) <-> adding the "N" dimension next to "ACGT" and giving it the value "blank_score"
             scores = scores.view(T, N, -1)
         return scores
 

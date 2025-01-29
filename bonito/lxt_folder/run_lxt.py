@@ -21,7 +21,7 @@ from bonito.cli.download import Downloader, models, __models_dir__
 from bonito.multiprocessing_bonito import process_cancel, process_itemmap
 from bonito.util import column_to_set, load_symbol, load_model, init, tqdm_environ
 
-from bonito.lxt_folder.register import run_lxt
+from bonito.lxt_folder.register import register
 
 
 def main(args):
@@ -49,6 +49,7 @@ def main(args):
         sys.stderr.write("> downloading model\n")
         Downloader(__models_dir__).download(args.model_directory)
 
+    use_koi = False
     sys.stderr.write(f"> loading model {args.model_directory}\n")
     try:
         model = load_model(
@@ -59,7 +60,7 @@ def main(args):
             overlap=args.overlap,
             batchsize=args.batchsize,
             quantize=args.quantize,
-            use_koi=True, #TESTVALUE
+            use_koi=use_koi, #IMPORTANT this changes output dimension 4096 -> 5120 and also changes the input ("input" -> "x because its now a serial")
         )
         model = model.apply(fuse_bn_)
     except FileNotFoundError:
@@ -68,43 +69,6 @@ def main(args):
         for model in sorted(models): sys.stderr.write(f" - {model}\n")
         exit(1)
 
-    if args.verbose:
-        sys.stderr.write(f"> model basecaller params: {model.config['basecaller']}\n")
-
-    basecall = load_symbol(args.model_directory, "basecall")
-
-    mods_model = None
-    if args.modified_base_model is not None or args.modified_bases is not None:
-        sys.stderr.write("> loading modified base model\n")
-        mods_model = load_mods_model(
-            args.modified_bases, args.model_directory, args.modified_base_model,
-            device=args.modified_device,
-        )
-        sys.stderr.write(f"> {mods_model[1]['alphabet_str']}\n")
-
-    if args.reference:
-        sys.stderr.write("> loading reference\n")
-        aligner = Aligner(args.reference, preset=args.mm2_preset)
-        if not aligner:
-            sys.stderr.write("> failed to load/build index\n")
-            exit(1)
-    else:
-        aligner = None
-
-    if args.save_ctc and not args.reference:
-        sys.stderr.write("> a reference is needed to output ctc training data\n")
-        exit(1)
-
-    if fmt.name != 'fastq':
-        groups, num_reads = reader.get_read_groups(
-            args.reads_directory, args.model_directory,
-            n_proc=1, recursive=args.recursive,
-            read_ids=column_to_set(args.read_ids), skip=args.skip,
-            cancel=process_cancel()
-        )
-    else:
-        groups = []
-        num_reads = None
 
     reads = reader.get_reads(
         args.reads_directory, n_proc=1, recursive=args.recursive,
@@ -119,72 +83,8 @@ def main(args):
         cancel=process_cancel()
     )
 
-    if args.verbose:
-        sys.stderr.write(f"> read scaling: {model.config.get('scaling')}\n")
-    
-    if args.max_reads:
-        reads = take(reads, args.max_reads)
-        if num_reads is not None:
-            num_reads = min(num_reads, args.max_reads)
 
-    if args.save_ctc:
-        reads = (
-            chunk for read in reads
-            for chunk in read_chunks(
-                read,
-                chunksize=model.config["basecaller"]["chunksize"],
-                overlap=model.config["basecaller"]["overlap"]
-            )
-        )
-        ResultsWriter = CTCWriter
-    else:
-        ResultsWriter = Writer
-
-    run_lxt(model, reads)
-    # results = basecall(
-    #     model, reads, reverse=args.revcomp, rna=args.rna,
-    #     batchsize=model.config["basecaller"]["batchsize"],
-    #     chunksize=model.config["basecaller"]["chunksize"],
-    #     overlap=model.config["basecaller"]["overlap"]
-    # )
-    
-    # if mods_model is not None:
-    #     if args.modified_device:
-    #         results = ((k, call_mods(mods_model, k, v)) for k, v in results)
-    #     else:
-    #         results = process_itemmap(
-    #             partial(call_mods, mods_model), results, n_proc=args.modified_procs
-    #         )
-    # if aligner:
-    #     results = align_map(aligner, results, n_thread=args.alignment_threads)
-
-    # writer_kwargs = {'aligner': aligner,
-    #                  'group_key': args.model_directory,
-    #                  'ref_fn': args.reference,
-    #                  'groups': groups,
-    #                  'min_qscore': args.min_qscore}
-    # if args.save_ctc:
-    #     writer_kwargs['rna'] = args.rna
-    #     writer_kwargs['min_accuracy'] = args.min_accuracy_save_ctc
-        
-    # writer = ResultsWriter(
-    #     fmt.mode, tqdm(results, desc="> calling", unit=" reads", leave=False,
-    #                    total=num_reads, smoothing=0, ascii=True, ncols=100,
-    #                    **tqdm_environ()),
-    #     **writer_kwargs)
-
-    # t0 = perf_counter()
-    # #CHANGE
-    # # writer.start()
-    # # writer.join()
-    # writer.run()
-    # duration = perf_counter() - t0
-    # num_samples = sum(num_samples for read_id, num_samples in writer.log)
-
-    # sys.stderr.write("> completed reads: %s\n" % len(writer.log))
-    # sys.stderr.write("> duration: %s\n" % timedelta(seconds=np.round(duration)))
-    # sys.stderr.write("> samples per second %.1E\n" % (num_samples / duration))
-    # sys.stderr.write("> done\n")
+    register(model, reads, use_koi)
 
 
 def argparser():

@@ -8,12 +8,15 @@ import torch.nn as nn
 
     
 
+torch.manual_seed(1)
+x = torch.rand((2,3,4,5), dtype=torch.float)
 
-tensor = torch.rand((2,4), requires_grad=True)
-tensorb = tensor * 2
-a = tensorb[0,:]
-b = tensorb[1,:] * 2
-c = a + b
-c[0].backward()
-print(tensor)
-print(tensor.grad)
+torch.manual_seed(1)
+y = torch.rand((2,3,4,5), dtype=torch.float)
+
+pad_x = torch.nn.functional.pad(x, (1,0,0,0,0,0,0,0), value=0)
+
+pad_y = torch.nn.functional.pad(y, (1,0), value=0)
+
+print(pad_x, "\n", pad_y)
+print(torch.equal(pad_x, pad_y))
