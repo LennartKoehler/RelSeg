@@ -15,7 +15,8 @@ def get_data(reads, chunksize=4000, overlap=100, batchsize=32,
 
     batches = (batchify(chunks, batchsize=batchsize))
     read, data = next(batches)
-    data = data[6]
+    read = read[0]
+    data = data[0]
     data = data[None, :, :]
     dtype = torch.float16 if half_supported() else torch.float32
     data = data.to(dtype)

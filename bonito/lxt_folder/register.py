@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 
 from bonito.lxt_folder.get_data import get_data, run_beam_search
 
+from tqdm import tqdm
 
 from PIL import Image
 from zennit.composites import LayerMapComposite
@@ -72,7 +73,9 @@ def register(bonito_model, reads, use_koi):
 
     read, data = get_data(reads, chunksize=12000, overlap=600) #adjust chunksize for different models
     data= data.to(device)
+    np.save(f"comparison/raw_signal_2_{read[0][0].read_id}.npy", data.detach().cpu().numpy())
 
+    print(read[0][0].read_id)
     model(data)
 
 
@@ -92,43 +95,50 @@ def register(bonito_model, reads, use_koi):
         positions = run_viterbi(y, bonito_model.seqdist)
         y = y.permute([1,0,2])
 
-    plot_multiple(data, y, positions)
+
+    relevances = get_relevances(data, y, positions)
+    segments = get_segments(relevances)
+    np.save(f"comparison/lxt_segments_{read[0][0].read_id}.npy", np.array(segments))
 
 
 
 
-def plot_multiple(data, y, positions):
-    heatmaps = []
-    positions = positions[0:20]
-    for i,(position, *kmer) in enumerate(positions[:-1]):
-        print(position)
+def get_relevances(data, y, positions):
+    relevances = []
+    for i,(position, *kmer) in tqdm(enumerate(positions), total=len(positions)):
         data.grad = None
         y_current = y[0, position, :].sum() #  : positions[i+1][0]-1
         y_current.backward(retain_graph=True)
-        heatmap = data.grad[0, 0]
+        relevance = data.grad[0, 0]
 
-        heatmap = heatmap / (abs(heatmap).max())
-        heatmap = heatmap.detach().cpu().numpy()
-        heatmaps.append(heatmap)
+        relevance = relevance / (abs(relevance).max())
+        relevance = relevance.detach().cpu().numpy()
+        relevances.append(relevance)
+    return relevances
+    
+def get_segments(relevances):
+    segments = [np.argmax(np.abs(r)) for r in relevances] # could also be added to get_relevances() or use generators to speed up
+    return segments
 
-    data = data.detach().cpu().numpy()
 
-    fig, axs = plt.subplots()
+def plot_relevances(relevances, raw_signal):
+    raw_signal = raw_signal.detach().cpu().numpy()
 
-    # offset = positions[0][0]
-    # offset *= 6
-    # range_end = positions[-1][0] * 6
-    offset = 150
+    fig, axs = plt.subplots(2)
+    offset = 0
     range_end = 450
 
 
-    axs.plot(data[0,0,:], color="black", linewidth=0.3, label="raw_data")
-    for i,heatmap in enumerate(heatmaps):
-        axs.plot(heatmap[:], label="lxt", alpha=0.7)
+    axs[0].plot(raw_signal[0,0,:], color="black", linewidth=0.3, label="raw_data")
+    for i,relevance in enumerate(relevances):
+        axs[1].plot(relevance, label="lxt", alpha=0.7)
+        start = np.argmax(np.abs(relevance))
+        axs[0].axvline(start, -5, 5, color="red", alpha=0.5, linewidth=0.5)
 
-    axs.set_xlim(offset,range_end)
-    plt.savefig("plots/lxt_at_moves", dpi=500)
+    axs[0].set_xlim(offset,range_end)
+    axs[1].set_xlim(offset,range_end)
 
+    plt.savefig("plots/lxt_at_moves_segment", dpi=500)
 
 def beam_search(y):
     # this can be used if use_koi = True to use the move table, since the output of use_koi = False is different the beamsearch can then not be used
@@ -172,7 +182,7 @@ def plot_raw_output(y):
 def varying_gamma(data, traced):
     offset = 100
     distance_between = 5
-    heatmaps = []
+    relevances = []
     gammas = itertools.product([0.1, 0.5, 100], [0.01, 0.05, 0.1, 1])
     gammas, gammas2 = itertools.tee(gammas)
     for conv_gamma, lin_gamma in gammas:
@@ -187,20 +197,20 @@ def varying_gamma(data, traced):
         y_current = y[0,offset,:].sum()
         y_current.backward(retain_graph=True)
 
-        heatmap = data.grad[0, 0]
-        heatmap = heatmap / (abs(heatmap).max())
-        heatmap = heatmap.detach().cpu().numpy()
+        relevance = data.grad[0, 0]
+        relevance = relevance / (abs(relevance).max())
+        relevance = relevance.detach().cpu().numpy()
         zennit_comp.remove()
-        heatmaps.append(heatmap)
+        relevances.append(relevance)
     
 
 
-    fig, axs = plt.subplots(len(heatmaps))
+    fig, axs = plt.subplots(len(relevances))
     offset *= 6
     distance_between *= 6
     fig.set_figheight(50)
     fig.set_figwidth(15)
-    for i,heatmap in enumerate(heatmaps):
-        axs[i].plot(heatmap[offset - 5*distance_between : offset + 15*distance_between])
+    for i,relevance in enumerate(relevances):
+        axs[i].plot(relevance[offset - 5*distance_between : offset + 15*distance_between])
         axs[i].set_title(f"gamma_conv, gamma_lin: {next(gammas2)}")
     plt.savefig("plots/gamma_variation", dpi=500)

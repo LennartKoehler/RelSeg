@@ -6,17 +6,13 @@ import torch
 import torch.nn as nn
 
 
-    
+n_base = 4
+state_len = 3
 
-torch.manual_seed(1)
-x = torch.rand((2,3,4,5), dtype=torch.float)
-
-torch.manual_seed(1)
-y = torch.rand((2,3,4,5), dtype=torch.float)
-
-pad_x = torch.nn.functional.pad(x, (1,0,0,0,0,0,0,0), value=0)
-
-pad_y = torch.nn.functional.pad(y, (1,0), value=0)
-
-print(pad_x, "\n", pad_y)
-print(torch.equal(pad_x, pad_y))
+idx = torch.cat([
+    torch.arange(n_base**(state_len))[:, None],
+    torch.arange(n_base**(state_len))
+    .repeat_interleave(n_base).reshape(n_base, -1).T
+], dim=1)
+#idx = torch.arange(n_base**(state_len)).repeat_interleave(n_base).reshape(n_base, -1).T
+print(idx)
