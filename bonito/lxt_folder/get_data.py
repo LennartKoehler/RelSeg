@@ -2,7 +2,7 @@
 from bonito.crf.basecall import *
 
 
-def get_data(reads, chunksize=4000, overlap=100, batchsize=32,
+def get_data(reads, chunksize=4000, overlap=100, batchsize=4,
              reverse=False, rna=False):
     """
     Basecalls a set of reads.
@@ -15,9 +15,6 @@ def get_data(reads, chunksize=4000, overlap=100, batchsize=32,
 
     batches = (batchify(chunks, batchsize=batchsize))
     read, data = next(batches)
-    read = read[0]
-    data = data[0]
-    data = data[None, :, :]
     dtype = torch.float16 if half_supported() else torch.float32
     data = data.to(dtype)
     return read, data
@@ -33,3 +30,4 @@ def run_beam_search(scores, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0
         'qstring': qstring,
         'sequence': sequence,
     }
+

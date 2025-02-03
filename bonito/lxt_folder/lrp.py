@@ -21,6 +21,7 @@ from bonito.cli.download import Downloader, models, __models_dir__
 from bonito.multiprocessing_bonito import process_cancel, process_itemmap
 from bonito.util import column_to_set, load_symbol, load_model, init, tqdm_environ
 
+from bonito.lxt_folder.lxt_nice import basecall_and_lrp
 from bonito.lxt_folder.register import register
 
 
@@ -49,7 +50,7 @@ def main(args):
         sys.stderr.write("> downloading model\n")
         Downloader(__models_dir__).download(args.model_directory)
 
-    use_koi = False
+    use_koi = True
     sys.stderr.write(f"> loading model {args.model_directory}\n")
     try:
         model = load_model(
@@ -84,7 +85,10 @@ def main(args):
     )
 
 
-    register(model, reads, use_koi)
+    result = register(model, reads, use_koi)
+    for r in result:
+        print(r)
+
 
 
 def argparser():

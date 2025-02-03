@@ -73,9 +73,8 @@ def register(bonito_model, reads, use_koi):
 
     read, data = get_data(reads, chunksize=12000, overlap=600) #adjust chunksize for different models
     data= data.to(device)
-    np.save(f"comparison/raw_signal_2_{read[0][0].read_id}.npy", data.detach().cpu().numpy())
+    #np.save(f"comparison/raw_signal_2_{read[0][0].read_id}.npy", data.detach().cpu().numpy())
 
-    print(read[0][0].read_id)
     model(data)
 
 
@@ -83,54 +82,93 @@ def register(bonito_model, reads, use_koi):
 
     input_string = "x" if use_koi else "input"
 
-    traced = attnlrp.register(model, dummy_inputs={input_string: x}, verbose=True) #IMPORTANT change "input" to "x" if necessary (use_koi!!!)
+    traced = attnlrp.register(model, dummy_inputs={input_string: x}, verbose=False) #IMPORTANT change "input" to "x" if necessary (use_koi!!!)
 
     zennit_comp.register(traced)
 
     y = traced(data.requires_grad_(True))
 
     if use_koi:
-        positions = beam_search(y)
+        positions = run_beam_search(y)["moves"]
     else:
         positions = run_viterbi(y, bonito_model.seqdist)
         y = y.permute([1,0,2])
 
 
-    relevances = get_relevances(data, y, positions)
-    segments = get_segments(relevances)
-    np.save(f"comparison/lxt_segments_{read[0][0].read_id}.npy", np.array(segments))
+    segments = get_segments(data, y, positions, segmentation)
+    #plot_relevances(relevances, data)
+    # np.save(f"comparison/beamsearch_move_positions_{read[0][0].read_id}.npy", positions)
 
 
+def batch_positions(positions):
+    result = torch.zeros_like(positions, dtype=torch.long)-1
+    most_moves_in_batch = 0
+    for i,sample in enumerate(positions):
+        moves = torch.argwhere(sample==1).squeeze()
+        result[i,:len(moves)] = moves
+        if len(moves)>most_moves_in_batch:
+            most_moves_in_batch = len(moves)
+    result = result[:,:most_moves_in_batch]
+    return result.T
 
+def get_segments(data, y, positions, segmentation_function):
+    batch_size, _ , seq_len = data.shape
 
-def get_relevances(data, y, positions):
-    relevances = []
-    for i,(position, *kmer) in tqdm(enumerate(positions), total=len(positions)):
+    batched_positions = batch_positions(positions)
+
+    segments_batch = torch.zeros(batch_size,1, device=data.device, dtype=torch.long)
+    full_batch_indices = torch.arange(data.shape[0], dtype=torch.long)
+
+    for i,motif_indices in tqdm(enumerate(batched_positions[:5,:]), total=batched_positions.shape[0]):
         data.grad = None
-        y_current = y[0, position, :].sum() #  : positions[i+1][0]-1
+        batch_indices = full_batch_indices[motif_indices!=-1]
+        motif_indices = motif_indices[motif_indices!=-1].to(torch.int64)
+        
+        y_current = y[batch_indices, motif_indices, :].sum()
         y_current.backward(retain_graph=True)
-        relevance = data.grad[0, 0]
+        relevance = data.grad[batch_indices, 0,:]
 
-        relevance = relevance / (abs(relevance).max())
-        relevance = relevance.detach().cpu().numpy()
-        relevances.append(relevance)
-    return relevances
+        z = torch.zeros((batch_size,1), device=data.device, dtype=torch.long)
+        segment_indices = segmentation_function(relevance)
+        z[batch_indices,:] = segment_indices # if not relevance because no more moves then just add segments add 0 untill the moves of the sample with the most moves is calculates
+
+        segments_batch = torch.cat((segments_batch, z), dim=1)
+    segments_batch_bit = torch.zeros((batch_size, seq_len))
+    segments_batch_bit[full_batch_indices.unsqueeze(1),segments_batch] = 1
+    return segments_batch_bit
+
+# def get_relevances(data, y, positions):
+#     relevances = []
+#     for i,(position, *kmer) in tqdm(enumerate(positions), total=len(positions)):
+#         data.grad = None
+#         y_current = y[0, position, :].sum(-1) #  : positions[i+1][0]-1
+#         y_current.backward(retain_graph=True)
+#         relevance = data.grad[0, 0]
+
+#         relevance = relevance / (abs(relevance).max())
+#         relevance = relevance.detach().cpu().numpy()
+#         relevances.append(relevance)
+#     return relevances
     
-def get_segments(relevances):
-    segments = [np.argmax(np.abs(r)) for r in relevances] # could also be added to get_relevances() or use generators to speed up
-    return segments
+def segmentation(relevances):
+    indexes = torch.argmax(torch.abs(relevances), dim=1, keepdim=True)
+    return indexes
 
 
 def plot_relevances(relevances, raw_signal):
     raw_signal = raw_signal.detach().cpu().numpy()
+    relevances = relevances.detach().cpu().numpy()
 
     fig, axs = plt.subplots(2)
+    fig.set_size_inches(80,5)
+
     offset = 0
-    range_end = 450
+    range_end = 500
 
 
-    axs[0].plot(raw_signal[0,0,:], color="black", linewidth=0.3, label="raw_data")
+    axs[0].plot(raw_signal, color="black", linewidth=0.3, label="raw_data")
     for i,relevance in enumerate(relevances):
+        print(relevance, raw_signal)
         axs[1].plot(relevance, label="lxt", alpha=0.7)
         start = np.argmax(np.abs(relevance))
         axs[0].axvline(start, -5, 5, color="red", alpha=0.5, linewidth=0.5)
@@ -138,20 +176,17 @@ def plot_relevances(relevances, raw_signal):
     axs[0].set_xlim(offset,range_end)
     axs[1].set_xlim(offset,range_end)
 
-    plt.savefig("plots/lxt_at_moves_segment", dpi=500)
+    plt.savefig("plots/lxt_test", dpi=300)
 
-def beam_search(y):
-    # this can be used if use_koi = True to use the move table, since the output of use_koi = False is different the beamsearch can then not be used
-    result = run_beam_search(y)
-    moves = result["moves"][0,:]
-    moves = torch.argwhere(moves==1).cpu().detach().numpy()
-    return moves
+
+
+
 
 def run_viterbi(y, seqdist):
     # only use with use_koi = False
     y_copy = y.detach().clone()
     traceback_kmer = decode(seqdist, y_copy)[0,:]
-    kmers = [(position, kmer) for position, kmer in enumerate(traceback_kmer) if kmer % 5 != 0] # filter out those were new kmers are predicted, remove "N"
+    kmers = [(position, kmer.detach().cpu()) for position, kmer in enumerate(traceback_kmer) if kmer % 5 != 0] # filter out those were new kmers are predicted, remove "N"
     return kmers
 
 

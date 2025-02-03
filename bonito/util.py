@@ -164,10 +164,10 @@ def chunk(signal, chunksize, overlap):
         # whereas torch.repeat requires explicit listing of all input dimensions eg (1,n) or (1,1,n)
         chunks = torch.cat((torch.from_numpy(np.tile(signal,n)), signal[...,:overhang]), dim=-1)[None, :]
     else:
-        stub = (T - overlap) % (chunksize - overlap)
-        chunks = signal[...,stub:].unfold(-1, chunksize, chunksize - overlap).movedim(-2,0)
+        stub = (T - overlap) % (chunksize - overlap) # what is the leftover when splitting signal into chunks
+        chunks = signal[...,stub:].unfold(-1, chunksize, chunksize - overlap).movedim(-2,0) # "cut" signal (without the "rest") into whole chunks 
         if stub > 0:
-            chunks = torch.cat([signal[None, ..., :chunksize], chunks], dim=0)
+            chunks = torch.cat([signal[None, ..., :chunksize], chunks], dim=0) # add on the leftover (chunksize is 12000 and eftover is 1050, then the first 12000 is added as chunk which includes 1050, but fills up the entire chunk)
     return chunks
 
 
@@ -197,20 +197,20 @@ def batchify(items, batchsize, dim=0):
     """
     Batch up items up to `batch_size`.
     """
-    stack, pos = [], 0
-    for k, v in items:
-        breaks = range(batchsize - pos, size(v, dim), batchsize)
-        for start, end in zip([0, *breaks], [*breaks, size(v, dim)]):
-            sub_batch = select_range(v, start, end, dim)
+    stack, pos = [], 0 # stack = batch
+    for k, v in items: # key = readinfo, v = chunk, item is one chunkified read
+        breaks = range(batchsize - pos, size(v, dim), batchsize) # breaks only yields a value if a read has to be split into multiple batches
+        for start, end in zip([0, *breaks], [*breaks, size(v, dim)]): # this for loop only runs multiple times if a read has to be split into multiple batches
+            sub_batch = select_range(v, start, end, dim) # a subbatch is the signal of one read, that might be in multiple chunks, but doesnt need multiple read/start/stop information
             stack.append(((k, (pos, pos + end - start)), sub_batch))
-            if pos + end - start == batchsize:
+            if pos + end - start == batchsize: # batch is full, ship it and reset
                 ks, vs = zip(*stack)
                 yield ks, concat(vs, dim)
                 stack, pos = [], 0
             else:
-                pos += end - start
+                pos += end - start # batch not full yet, keep filling
 
-    if len(stack):
+    if len(stack): # stack/batch not full but no more reads so just yield the not full batch
         ks, vs = zip(*stack)
         yield ks, concat(vs, dim)
 
@@ -219,13 +219,20 @@ def unbatchify(batches, dim=0):
     """
     Reconstruct batches.
     """
-    batches = (
+    # just for debugging/understanding purposes
+    # b= []
+    # for sub_batches, v in batches:
+    #     for k, (start,end) in sub_batches:
+    #         b.append((k, select_range(v, start, end, dim)))
+    # for k, group in groupby(b, itemgetter(0)):
+    #     test = (k, concat([v for (k, v) in group], dim))
+    batches = ( # unpack the batches into original chunk shape
         (k, select_range(v, start, end, dim))
         for sub_batches, v in batches
         for k, (start, end) in sub_batches
     )
     return (
-        (k, concat([v for (k, v) in group], dim))
+        (k, concat([v for (k, v) in group], dim)) # imguessing this is where a read which is split among multiple batches is reunited
         for k, group in groupby(batches, itemgetter(0))
     )
 
