@@ -1,8 +1,9 @@
 import torch
 from koi.decode import beam_search
 import numpy as np
-from lxt_folder.LRP_composites import lxt_comp, zennit_comp
-from crf.basecall import *
+from bonito.lxt_folder.LRP_composites import lxt_comp, zennit_comp
+from bonito.crf.basecall import *
+from tqdm import tqdm
 
 # beamsearch, use_koi
 def register(model, data): # the imported composites are used
@@ -13,20 +14,42 @@ def register(model, data): # the imported composites are used
     return traced_model
 
 
+def batch_positions(positions):
+    result = torch.zeros_like(positions, dtype=torch.long)-1
+    most_moves_in_batch = 0
+    for i,sample in enumerate(positions):
+        moves = torch.argwhere(sample==1).squeeze()
+        result[i,:len(moves)] = moves
+        if len(moves)>most_moves_in_batch:
+            most_moves_in_batch = len(moves)
+    result = result[:,:most_moves_in_batch]
+    return result.T
 
-# TODO how do i deal with batches, think i can just go over batches/ignore them
-def get_relevances(input_signal, output_scores, positions):
-    relevances = []
-    for i,(position, *kmer) in enumerate(positions):
-        input_signal.grad = None
-        y_current = output_scores[0, position, :].sum() #  : moves[i+1][0]-1
+def lrp(data, y, positions, segmentation_function):
+    batch_size, _ , seq_len = data.shape
+
+    batched_positions = batch_positions(positions)
+
+    segments_batch = torch.zeros(batch_size,1, device=data.device, dtype=torch.long)
+    full_batch_indices = torch.arange(data.shape[0], dtype=torch.long)
+
+    for i,motif_indices in tqdm(enumerate(batched_positions[:30,:]), total=batched_positions.shape[0]):
+        data.grad = None
+        batch_indices = full_batch_indices[motif_indices!=-1]
+        motif_indices = motif_indices[motif_indices!=-1].to(torch.int64)
+        
+        y_current = y[batch_indices, motif_indices, :].sum()
         y_current.backward(retain_graph=True)
-        relevance = input_signal.grad[0, 0]
+        relevance = data.grad[batch_indices, 0,:]
 
-        relevance = relevance / (abs(relevance).max())
-        relevance = relevance.detach().cpu().numpy()
-        relevances.append(relevance)
-    return relevances
+        z = torch.zeros((batch_size,1), device=data.device, dtype=torch.long)
+        segment_indices = segmentation_function(relevance)
+        z[batch_indices,:] = segment_indices # if not relevance because no more moves then just add segments add 0 untill the moves of the sample with the most moves is calculates
+
+        segments_batch = torch.cat((segments_batch, z), dim=1)
+    return segments_batch
+
+
 
 def run_beam_search(scores, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0, blank_score=2.0):
     with torch.cuda.device(scores.device):
@@ -40,12 +63,15 @@ def run_beam_search(scores, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0
         'sequence': sequence,
     }
 
-def get_segments(relevances):
-    segments = np.zeros([len(relevances[0])])
-    indexes = [np.argmax(np.abs(r)) for r in relevances] # could also be added to get_relevances() or use generators to speed up
-    segments[indexes] = 1
-    return segments
+def segmentation(relevances):
+    indexes = torch.argmax(torch.abs(relevances), dim=1, keepdim=True)
+    return indexes
 
+def format_segments_scale(segments, stride, batches, downsampled_len):
+    segments_bit = torch.zeros((batches, downsampled_len))
+    segments_bit[torch.arange(batches), segments] = 1
+    segments_bit = segments_bit.view(batches, -1, stride)
+    return segments_bit
 
 def forward_and_lrp(model, input_signal):
     device = next(model.parameters()).device
@@ -56,14 +82,15 @@ def forward_and_lrp(model, input_signal):
     scores = model_enc(input_signal.requires_grad_(True))
     beam_result = run_beam_search(scores)
 
-    moves = beam_result["moves"][0,:]
-    moves = torch.argwhere(moves==1).cpu().detach().numpy()
+    moves = beam_result["moves"]
 
-    moves = np.array([(1,0),(2,0)]) # TESTVALUE
-    relevances = get_relevances(input_signal, scores, moves)
-    segments = get_segments(relevances)
+    segments = lrp(input_signal, scores, moves, segmentation)
+    segments = format_segments_scale(segments, model.stride, scores.shape[0], scores.shape[-1])
+
     beam_result["segments"] = segments
     return beam_result
+
+
 
 def fmt(stride, attrs, rna=False):
     fliprna = (lambda x:x[::-1]) if rna else (lambda x:x)
@@ -76,7 +103,7 @@ def fmt(stride, attrs, rna=False):
     }
 
 
-def basecall_and_lrp(model, reads, chunksize=4000, overlap=100, batchsize=16,
+def basecall_and_lrp(model, reads, chunksize=4000, overlap=100, batchsize=4,
              reverse=False, rna=False):
     """
     Basecalls a set of reads.

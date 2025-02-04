@@ -22,7 +22,7 @@ from bonito.multiprocessing_bonito import process_cancel, process_itemmap
 from bonito.util import column_to_set, load_symbol, load_model, init, tqdm_environ
 
 from bonito.lxt_folder.lxt_nice import basecall_and_lrp
-from bonito.lxt_folder.register import register
+import torch
 
 
 def main(args):
@@ -85,9 +85,9 @@ def main(args):
     )
 
 
-    result = register(model, reads, use_koi)
-    for r in result:
-        print(r)
+    result = basecall_and_lrp(model, reads)
+
+    torch.save(next(result), "test_result.pkl")
 
 
 

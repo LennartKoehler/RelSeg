@@ -148,11 +148,11 @@ def column_to_set(filename, idx=0, skip_header=False):
                 next(tsv)
             return {line.strip().split()[idx] for line in tsv.readlines()}
 
-
 def chunk(signal, chunksize, overlap):
     """
     Convert a read into overlapping chunks before calling
     """
+
     if signal.ndim == 1:
         signal = signal.unsqueeze(0)
     T = signal.shape[-1]
@@ -192,13 +192,18 @@ def stitch(chunks, chunksize, overlap, length, stride, reverse=False):
             chunks[0, :first_chunk_end], *chunks[1:-1, start:end], chunks[-1, start:]
         ])
 
-
 def batchify(items, batchsize, dim=0):
     """
     Batch up items up to `batch_size`.
     """
     stack, pos = [], 0 # stack = batch
+    # x = True
+
     for k, v in items: # key = readinfo, v = chunk, item is one chunkified read
+        # if x:
+        #     torch.save(k[0], "test_read.pkl")
+        #     print(k[0])
+        #     x = False
         breaks = range(batchsize - pos, size(v, dim), batchsize) # breaks only yields a value if a read has to be split into multiple batches
         for start, end in zip([0, *breaks], [*breaks, size(v, dim)]): # this for loop only runs multiple times if a read has to be split into multiple batches
             sub_batch = select_range(v, start, end, dim) # a subbatch is the signal of one read, that might be in multiple chunks, but doesnt need multiple read/start/stop information
@@ -226,13 +231,13 @@ def unbatchify(batches, dim=0):
     #         b.append((k, select_range(v, start, end, dim)))
     # for k, group in groupby(b, itemgetter(0)):
     #     test = (k, concat([v for (k, v) in group], dim))
-    batches = ( # unpack the batches into original chunk shape
+    batches = ( # unpack the batches into original chunk shape and distribute v (moves,sequence,quality) to each batch
         (k, select_range(v, start, end, dim))
         for sub_batches, v in batches
         for k, (start, end) in sub_batches
     )
     return (
-        (k, concat([v for (k, v) in group], dim)) # imguessing this is where a read which is split among multiple batches is reunited
+        (k, concat([v for (k, v) in group], dim)) # im guessing this is where a read which is split among multiple batches is reunited
         for k, group in groupby(batches, itemgetter(0))
     )
 

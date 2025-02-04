@@ -1,11 +1,14 @@
 import torch
-from einops import repeat
-from flash_attn.ops.triton.layer_norm import RMSNorm as fRMSNorm
-
-import torch
+import matplotlib.pyplot as plt
 import torch.nn as nn
 
-a = torch.tensor([1,2,3])
-b = torch.tensor([4,4])
-c = torch.tensor([a,b])
-print(c)
+result = torch.load("test_result.pkl")
+read = torch.load("test_read.pkl")
+print(read)
+print(result[0])
+result = result[1]
+plt.plot(read.signal)
+for segment in result["segments"]:
+    plt.vlines(segment.detach().cpu(), -2, 2)
+plt.xlim(0,500)
+plt.savefig("test.png")
