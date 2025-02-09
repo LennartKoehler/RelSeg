@@ -16,3 +16,4 @@ basecall
 batch shape: torch.Size([41, 1, 12000])
 scores shape: torch.Size([41, 2000, 4096])
 
+dont use chunksize which is not divisible by stride

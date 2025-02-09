@@ -9,15 +9,10 @@ import torch.nn.functional as F
 from torch import nn
 import math
 
-from bonito.lxt_folder.RMSNorm import RMSNorm
+from bonito.lrp_folder.RMSNorm import RMSNorm
 
-import lxt.modules as lm
-import lxt.functional as lf
 try:
-    from flash_attn.modules.mlp import GatedMlp as faGatedMlp
     from flash_attn.layers.rotary import RotaryEmbedding
-    from flash_attn import flash_attn_qkvpacked_func
-    from flash_attn.ops.triton.layer_norm import RMSNorm as faRMSNorm
 except ImportError:
     logger.warning(
         "please install flash-attn to use the transformer module: "
@@ -47,7 +42,7 @@ def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.
 
     attn_weight = query @ key.transpose(-2, -1)
     attn_weight = attn_weight * torch.tensor(scale_factor, requires_grad=False)
-    attn_weight = attn_weight + attn_bias.detach() #IMPORTANT PROBLEM HERE, attn_bias is -Inf
+    attn_weight = attn_weight + attn_bias.detach()
     attn_weight = torch.softmax(attn_weight, dim=-1)
     #attn_weight = torch.dropout(attn_weight, dropout_p, train=True) # LXT no dropout (dont need since were not training)
     return attn_weight @ value
@@ -84,15 +79,6 @@ class MultiHeadAttention(Module):
         
         self.Wqkv = torch.nn.Linear(d_model, 3 * d_model, bias=qkv_bias)
 
-        # self.q_weight = self.Wqkv.weight[:d_model, :].clone().to("cuda")
-        # self.k_weight = self.Wqkv.weight[d_model:2*d_model, :].clone().to("cuda")
-        # self.v_weight = self.Wqkv.weight[2*d_model:, :].clone().to("cuda") #IMPORTANT this is the only way the state_dict loading still works
-
-        # if qkv_bias:
-        #     self.q_bias = self.Wqkv.bias[:d_model].clone().to("cuda")
-        #     self.k_bias = self.Wqkv.bias[d_model:2*d_model].clone().to("cuda")
-        #     self.v_bias = self.Wqkv.bias[2*d_model:].clone().to("cuda")
-
         self.out_proj = nn.Linear(d_model, d_model, bias=out_bias)
 
         self.rotary_emb_flash = RotaryEmbedding(self.rotary_dim, interleaved=False)
@@ -100,10 +86,6 @@ class MultiHeadAttention(Module):
         self.attn_window = (-1, -1) if attn_window is None else tuple(attn_window)
 
     def attn_func(self, q, k, v):
-        # if torch.cuda.get_device_capability(qkv.device)[0] >= 8 and (torch.is_autocast_enabled() or qkv.dtype == torch.half):
-        #     attn_output = flash_attn_qkvpacked_func(qkv, window_size=self.attn_window)
-        # else:
-
         mask = sliding_window_mask(q.shape[1], self.attn_window, q.device)
         attn_output = scaled_dot_product_attention(q.permute(0,2,1,3)[:,None,:,:,:], k.permute(0,2,1,3)[:,None,:,:,:], v.permute(0,2,1,3)[:,None,:,:,:], attn_mask=mask)
         attn_output = attn_output.permute(0, 1, 3, 2, 4)
@@ -114,25 +96,16 @@ class MultiHeadAttention(Module):
         qkv = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
 
 
-        # self.q_weight.requires_grad_()
-        # self.k_weight.requires_grad_()
-        # self.v_weight.requires_grad_()
-        # q_val = torch.matmul(x, self.q_weight.to(x.dtype).T).view(N,T,self.nhead, self.head_dim)        
-        # k_val = torch.matmul(x, self.k_weight.to(x.dtype).T).view(N,T,self.nhead, self.head_dim)
-        # v_val = torch.matmul(x, self.v_weight.to(x.dtype).T).view(N,T,self.nhead, self.head_dim)
         q_val = qkv[:,:,0,:,:]
         k_val = qkv[:,:,1,:,:]
         v_val = qkv[:,:,2,:,:]
         q_val = self.rotary_emb_flash.apply_rotary_embedding_not_flash_x(q_val)
         k_val = self.rotary_emb_flash.apply_rotary_embedding_not_flash_x(k_val)
-        # qkv = self.rotary_emb_flash(qkv)
 
 
         attn_output = self.attn_func(q_val, k_val, v_val).reshape(N, T, self.d_model)
-        #attn_output = q_val.reshape(N,T, self.d_model)
 
         out = self.out_proj(attn_output)
-        #out = attn_output
         return out
     
 
@@ -140,15 +113,9 @@ class MultiHeadAttention(Module):
 
     
 def swiglu(gate, y):
-    # temp = lf.mul2(gate, y)
     temp = gate * y
     y = temp * 1/(torch.add(torch.tensor(1, requires_grad=False), torch.exp(-gate)))
-    #y = lf.mul2(temp, 1/(lf.add2(torch.tensor(1).detach(), torch.exp(-gate))))
     return y
-
-
-    
-
 
 
 

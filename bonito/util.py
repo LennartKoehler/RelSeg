@@ -180,8 +180,8 @@ def stitch(chunks, chunksize, overlap, length, stride, reverse=False):
     semi_overlap = overlap // 2
     start, end = semi_overlap // stride, (chunksize - semi_overlap) // stride
     stub = (length - overlap) % (chunksize - overlap)
-    first_chunk_end = (stub + semi_overlap) // stride if (stub > 0) else end
-
+    first_chunk_end = (stub + semi_overlap) // stride if (stub > 0) else end # IMPORTANT this is offset a bit if length % stride != 0
+        
     if reverse:
         chunks = list(chunks)
         return concat([
@@ -197,13 +197,8 @@ def batchify(items, batchsize, dim=0):
     Batch up items up to `batch_size`.
     """
     stack, pos = [], 0 # stack = batch
-    # x = True
 
     for k, v in items: # key = readinfo, v = chunk, item is one chunkified read
-        # if x:
-        #     torch.save(k[0], "test_read.pkl")
-        #     print(k[0])
-        #     x = False
         breaks = range(batchsize - pos, size(v, dim), batchsize) # breaks only yields a value if a read has to be split into multiple batches
         for start, end in zip([0, *breaks], [*breaks, size(v, dim)]): # this for loop only runs multiple times if a read has to be split into multiple batches
             sub_batch = select_range(v, start, end, dim) # a subbatch is the signal of one read, that might be in multiple chunks, but doesnt need multiple read/start/stop information

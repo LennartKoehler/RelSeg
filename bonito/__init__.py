@@ -1,10 +1,10 @@
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 from bonito.cli import basecaller, download, duplex, evaluate, export, train, view
-from bonito.lxt_folder import lrp
-from bonito import lxt_folder
+from bonito.lrp_folder import run_lrp
+from bonito import lrp_folder
 modules = [
-    'basecaller', 'download', 'duplex', 'evaluate', 'export', 'train', 'view', 'lrp'
+    'basecaller', 'download', 'duplex', 'evaluate', 'export', 'train', 'view', 'run_lrp'
 ]
 
 __version__ = '0.8.1'
