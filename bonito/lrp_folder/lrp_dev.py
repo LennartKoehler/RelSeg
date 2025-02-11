@@ -7,7 +7,7 @@ def plot_relevances(relevances, raw_signal):
     relevances = relevances.detach().cpu().numpy()
 
     relevances = relevances.T
-    fig, axs = plt.subplots(2)
+    fig, axs = plt.subplots((2))
     fig.set_size_inches(80,5)
 
     xmin = 0
@@ -17,14 +17,21 @@ def plot_relevances(relevances, raw_signal):
     for i,relevance in enumerate(relevances):
         relevance = np.abs(relevance)
         relevance = relevance/np.max(relevance)
-        axs[1].plot(relevance, label="lxt", alpha=0.7)
-        start = np.argmax(np.abs(relevance))
-        axs[0].axvline(start, -5, 5, color="red", alpha=0.5, linewidth=0.5)
+        if sum(relevance) < 500:
 
-    axs[0].set_xlim(xmin,xmax)
+            axs[1].plot(relevance, label="relevance", alpha=0.7)
+
+    axs[0].set_title("raw signal")
+    axs[0].set_ylabel("current")
+    axs[1].set_ylabel("absolute normed relevance")
+    axs[1].set_title("relevance")
+    axs[1].set_xlabel("datapoints")
+
     axs[1].set_xlim(xmin,xmax)
+    axs[0].set_xlim(xmin,xmax)
+    fig.tight_layout()
 
-    plt.savefig("plots/lxt_test", dpi=300)
+    plt.savefig("plots/lrp_long", dpi=300)
 
 if __name__ == "__main__":
     relevances = torch.load("relevances.pkl")

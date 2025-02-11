@@ -150,3 +150,23 @@ def format_segments_bit(segments, stride, batchsize, downsampled_len): # unused
     segments_bit.index_put_((torch.arange(batchsize, dtype=torch.long).unsqueeze(1), segments), torch.ones_like(segments), accumulate=True)
     segments_bit[:,0] = 1
     return segments_bit
+
+
+#IMPORTANT 
+def batched_lrp_loop(data, y, batched_positions):
+    full_batch_indices = torch.arange(data.shape[0], dtype=torch.long)
+    batched_positions = batched_positions.T
+    for i, motif_indices in enumerate(batched_positions):
+
+        data.grad = None
+        batch_indices_filtered = full_batch_indices[motif_indices!=-1]
+        motif_indices_filtered = motif_indices[motif_indices!=-1].to(torch.int64)
+
+        batch_indices_filtered = torch.stack([batch_indices_filtered, full_batch_indices])
+        motif_indices_filtered = torch.stack([motif_indices_filtered, batched_positions[i+20,:]])
+
+
+        y_current = y[batch_indices_filtered, motif_indices_filtered, :].sum()
+        y_current.backward(retain_graph=True)
+        relevance = data.grad[batch_indices_filtered, 0,:]
+        yield (relevance, batch_indices_filtered, motif_indices)

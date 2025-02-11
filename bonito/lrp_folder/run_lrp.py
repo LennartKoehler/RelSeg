@@ -133,7 +133,8 @@ def main(args):
         model, reads, reverse=args.revcomp, rna=args.rna,
         batchsize=model.config["basecaller"]["batchsize"],
         chunksize=model.config["basecaller"]["chunksize"],
-        overlap=model.config["basecaller"]["overlap"]
+        overlap=model.config["basecaller"]["overlap"],
+        save_test_relevance=args.save_relevance
     )
     
     if mods_model is not None:
@@ -210,4 +211,5 @@ def argparser():
     parser.add_argument("--alignment-threads", default=8, type=int)
     parser.add_argument("--mm2-preset", default='lr:hq', type=str)
     parser.add_argument('-v', '--verbose', action='count', default=0)
+    parser.add_argument('--save-relevance',action="store_true", default=False)
     return parser

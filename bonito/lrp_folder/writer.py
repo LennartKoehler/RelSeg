@@ -2,13 +2,26 @@ from bonito.io import *
 
 def write_segmentation(read_id, sequence, segments, fd=sys.stdout):
     assert len(sequence) == segments.shape[0], f"problem, number of bases and number of segments doesn't match: (bases: {len(sequence)}, segments:{segments.shape[0]})"
-    fd.write(f"read_id \t base \t start_position")
     for base, segment in zip(sequence, segments):
-        fd.write(f"{read_id}\t{base}\t{segment}\n")
+        fd.write(f"{read_id}\t{base}")
+        for peak in segment:
+            if peak.shape==2:
+                peak_pos = peak[0]
+                peak_height = peak[1]
+                if peak_height != float("nan"):
+                    fd.write(f"\t({int(peak_pos)}, {peak_height})")
+                else:
+                    fd.write(f"\t(nan, nan)")
+            else:
+                fd.write(f"\t{int(peak)}")
+        fd.write("\n")
+        
 
 class LRP_Writer(Writer):
     def run(self):
         with CSVLogger(summary_file(), sep='\t') as summary:
+            self.fd.write(f"read_id\tbase tsegments (start_position, height)\n")
+
             for read, res in self.iterator:
 
                 seq = res['sequence']

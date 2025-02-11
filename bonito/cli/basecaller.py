@@ -57,7 +57,6 @@ def main(args):
             overlap=args.overlap,
             batchsize=args.batchsize,
             quantize=args.quantize,
-            use_koi=True, #TESTVALUE
         )
         model = model.apply(fuse_bn_)
     except FileNotFoundError:
@@ -65,7 +64,7 @@ def main(args):
         sys.stderr.write(f"> available models:\n")
         for model in sorted(models): sys.stderr.write(f" - {model}\n")
         exit(1)
-
+        
     if args.verbose:
         sys.stderr.write(f"> model basecaller params: {model.config['basecaller']}\n")
 

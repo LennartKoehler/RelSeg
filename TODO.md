@@ -11,3 +11,9 @@ i think if a base is after the semioverlap, but the segmentation says the positi
 -> maybe i can add 0s in the segments for where there are no moves, then i can stitch the segments like the others, by just removing the beginning of the sequence and not filtering by size
 -> maybe add another value to the segments which states from which sequence index it came from
     -> also return the batched_positions from the lrp loop, this states exactly where the segments came from
+
+add trimmed to segment positions
+
+
+IDEA: calc relevance for every fifth move at once, see what happens -> faster, can they be seperated
+
