@@ -1,26 +1,37 @@
 from bonito.io import *
 
-def write_segmentation(read_id, sequence, segments, fd=sys.stdout):
+def write_segmentation(read_id, sequence, segments, filename):
     assert len(sequence) == segments.shape[0], f"problem, number of bases and number of segments doesn't match: (bases: {len(sequence)}, segments:{segments.shape[0]})"
-    for base, segment in zip(sequence, segments):
-        fd.write(f"{read_id}\t{base}")
-        for peak in segment:
-            if peak.shape==2:
-                peak_pos = peak[0]
-                peak_height = peak[1]
-                if peak_height != float("nan"):
-                    fd.write(f"\t({int(peak_pos)}, {peak_height})")
+    with open(filename, "a") as f:
+        for base, segment in zip(sequence, segments):
+            f.write(f"{read_id}\t{base}")
+            for peak in segment:
+                if len(peak) == 2:
+                    if peak[-1] == -1.0:
+                        f.write(f"\t-1.0\t-1.0")
+                    else:
+                        f.write(f"\t{peak[0]}\t{peak[1]}")
+                       
                 else:
-                    fd.write(f"\t(nan, nan)")
-            else:
-                fd.write(f"\t{int(peak)}")
-        fd.write("\n")
-        
+                    f.write(f"\t{int(peak)}")
+            f.write("\n")
+
+def get_segment_filename():
+    """
+    Return the filename to use for the segment tsv.
+    """
+    stdout = realpath('/dev/fd/1')
+    if sys.stdout.isatty() or stdout.startswith('/proc'):
+        return 'segments.tsv'
+    return '%s_segments.tsv' % splitext(stdout)[0]  
 
 class LRP_Writer(Writer):
     def run(self):
         with CSVLogger(summary_file(), sep='\t') as summary:
-            self.fd.write(f"read_id\tbase tsegments (start_position, height)\n")
+
+            segment_filename = get_segment_filename()
+            with open(segment_filename, "w") as f:
+                f.write(f"read_id\tbase\tstart\n")
 
             for read, res in self.iterator:
 
@@ -46,22 +57,16 @@ class LRP_Writer(Writer):
                     *read.tagdata(),
                     *mods_tags,
                 ]
+                tags.append(f'mv:B:c,{encode_moves(res["moves"], res["stride"])}')
 
 
-                segments = res["segments"]
-                write_segmentation(read_id, seq, segments, fd=self.fd)
+                if len(seq):
 
+                    segments = res["segments"]
+                    write_segmentation(read_id, seq, segments, segment_filename)
 
-                # if len(seq):
-                #     if self.mode == 'wfq':
-                #         write_fastq(read_id, seq, qstring, fd=self.fd, tags=tags)
-                #     else:
-                #         self.output.write(
-                #             AlignedSegment.fromstring(
-                #                 sam_record(read_id, seq, qstring, mapping, tags=tags),
-                #                 self.output.header
-                #             )
-                #         )
-                #     summary.append(summary_row(read, len(seq), mean_qscore, alignment=mapping))
-                # else:
-                #     logger.warn("> skipping empty sequence %s", read_id)
+                    write_fastq(read_id, seq[::-1], qstring[::-1], fd=self.fd, tags=tags) # reverse to have real orientation
+
+                    summary.append(summary_row(read, len(seq), mean_qscore, alignment=mapping))
+                else:
+                    logger.warn("> skipping empty sequence %s", read_id)

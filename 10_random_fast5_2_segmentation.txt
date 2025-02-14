@@ -1,1 +1,0 @@
-read_id	base tsegments (start_position, height)

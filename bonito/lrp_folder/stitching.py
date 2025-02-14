@@ -45,13 +45,12 @@ def stitch_segments_indices(chunks, chunksize, overlap, length, stride, reverse=
     end_down = end // stride
     first_chunk_end_down = first_chunk_end // stride
 
-    chunks[chunks == -1] = float("nan")
+    chunks[chunks == -2] = float("nan")
     chunks[:,:,:,0] += offset.view(-1,1,1)
 
     segments = concat([
             chunks[0, :first_chunk_end_down,:,:], *chunks[1:-1, start_down:end_down,:,:], chunks[-1, start_down:,:,:]
         ])
     segments = segments[~torch.isnan(segments)].view(-1, n_peaks, per_peak)
-    segments[segments[:,:,-1] == -2] = float("nan")
 
     return segments

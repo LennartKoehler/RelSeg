@@ -5,18 +5,18 @@ from bonito.lrp_folder.LRP_composites import lxt_comp, zennit_comp
 from bonito.util import chunk, batchify, unbatchify, half_supported
 from koi.decode import beam_search, to_str
 from scipy.signal import find_peaks
-from tqdm import tqdm
 from bonito.lrp_folder.stitching import stitch_results
 
 
-def fmt(stride, attrs, rna=False):
-    fliprna = (lambda x:x[::-1]) if rna else (lambda x:x)
+def fmt(stride, attrs, trimmed_samples, rna=False):
+    segments = attrs['segments'].numpy()
+    segments[:,:,0] += trimmed_samples
     return {
         'stride': stride,
         'moves': attrs['moves'].numpy(),
-        'segments': attrs['segments'].numpy(),
-        'qstring': fliprna(to_str(attrs['qstring'])),
-        'sequence': fliprna(to_str(attrs['sequence'])), #IMPORTANT here int is translated to ascii (ACGT)
+        'segments': segments,
+        'qstring': to_str(attrs['qstring']), # IMPORTANT dont flip sequence etc like in basecaller because otherwirse they are not mappable to the raw signal
+        'sequence': to_str(attrs['sequence']), #IMPORTANT here int is translated to ascii (ACGT)
     }
 
 def run_beam_search(scores, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0, blank_score=2.0):
@@ -40,8 +40,8 @@ def save_relevance_and_signal(relevance_gen, input_signal, n_moves):
     for i, (relevance, batch_indices, motif_indices) in enumerate(relevance_gen):
         relevances[batch_indices, :, i] = relevance
 
-    torch.save(relevances, "relevances.pkl")
-    torch.save(input_signal, "raw_signal.pkl")
+    torch.save(relevances, "test_outputs/relevances.pkl")
+    torch.save(input_signal, "test_outputs/raw_signal.pkl")
 
 
 def register(model, dummy_input): # the imported composites are used
@@ -82,12 +82,12 @@ def batched_lrp_loop(data, y, batched_positions):
 def segmentation_loop(relevance_gen, segmentation_function_out_shape, batchsize, downsampled_size):
     segmentation_function, segment_shape = segmentation_function_out_shape
 
-    segments_batch = torch.zeros((batchsize, downsampled_size, segment_shape[0], segment_shape[1]), dtype=torch.float)-1 # this tensor is longer than needed and will never be filled because n_moves is shorter than downsampled_size, but its easier to unbatchify
+    segments_batch = torch.zeros((batchsize, downsampled_size, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2 # this tensor is longer than needed and will never be filled because n_moves is shorter than downsampled_size, but its easier to unbatchify
 
-    for i, (relevance, batch_indices, motif_indices) in tqdm(enumerate(relevance_gen)):
+    for i, (relevance, batch_indices, motif_indices) in enumerate(relevance_gen):
 
         segment_indices = segmentation_function(relevance).to("cpu")
-        z = torch.zeros((batchsize, segment_shape[0], segment_shape[1]), dtype=torch.float)-1
+        z = torch.zeros((batchsize, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2
         z[batch_indices] = segment_indices # if a sample in the batch no longer has moves then just keep adding 0 as segment until all samples in batch have no more moves
         segments_batch[torch.arange(batchsize),motif_indices,:,:] = z
 
@@ -96,15 +96,15 @@ def segmentation_loop(relevance_gen, segmentation_function_out_shape, batchsize,
 def peak_segmentation(number_peaks):
     segment_shape = (number_peaks, 2)
     def func(relevances):
-        result = torch.zeros((relevances.shape[0], number_peaks, 2)) - 2 # not -1 because i dont want to delete later
+        result = torch.zeros((relevances.shape[0], number_peaks, 2)) - 1 # not -1 because i dont want to delete later
         for i,relevance in enumerate(relevances):
-            relevance = relevance.abs()
+            relevance = torch.nn.functional.pad(relevance.abs(), (1,1), "constant", 0)  # pad at beginning and end if peak is at position 0 then it will not find the peak because there is nothing to the left
             relevance = relevance / (relevance.max())
-            peaks = find_peaks(relevance.detach().cpu(), distance=4, height=0.2)
-            peaks = np.array([peaks[0], peaks[1]["peak_heights"]])
+            peaks = find_peaks(relevance.detach().cpu(), distance=3, height=0.2)
+            peaks = np.array([peaks[0]-1, peaks[1]["peak_heights"]]) # -1 because of the padding
+
             peaks = peaks[:,np.argsort(peaks, 1)[1]]
             peaks = np.flip(peaks, axis=1).T
-
             peaks = torch.from_numpy(peaks.copy())
             peaks = peaks[:number_peaks].to(torch.float)
             result[i,:peaks.shape[0],torch.arange(2)] = peaks
@@ -141,7 +141,7 @@ def forward_and_lrp(model_enc, input_signal, stride, save_relevance=False): #MAI
         assert False # TESTVALUE
 
 
-    segments = segmentation_loop(relevance_gen, argmax_segmentation(), batchsize, downsampled_len)
+    segments = segmentation_loop(relevance_gen, peak_segmentation(5), batchsize, downsampled_len)
     #segments = format_segments_bit(segments, stride, batchsize, downsampled_len)
 
     beam_result["segments"] = segments
@@ -167,7 +167,7 @@ def basecall_and_lrp(model, reads, chunksize=4000, overlap=100, batchsize=4,
     model_enc = register(model.encoder, dummy_input)
 
     scores = (
-        (read, forward_and_lrp(model_enc, batch, model.stride, save_test_relevance)) for read, batch in batches # TODO reverse
+        (read, forward_and_lrp(model_enc, batch, model.stride, save_test_relevance)) for read, batch in batches
     )
 
     results = (
@@ -176,7 +176,7 @@ def basecall_and_lrp(model, reads, chunksize=4000, overlap=100, batchsize=4,
     )
 
     return (
-        (read, fmt(model.stride, attrs, rna))
+        (read, fmt(model.stride, attrs, read.trimmed_samples, rna))
         for read, attrs in results
     )
 

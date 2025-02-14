@@ -72,7 +72,6 @@ def main(args):
     if args.verbose:
         sys.stderr.write(f"> model basecaller params: {model.config['basecaller']}\n")
 
-    basecall = load_symbol(args.model_directory, "basecall")
 
     mods_model = None
     if args.modified_base_model is not None or args.modified_bases is not None:
@@ -130,7 +129,7 @@ def main(args):
 
 
     results = basecall_and_lrp(
-        model, reads, reverse=args.revcomp, rna=args.rna,
+        model, reads, reverse=False, rna=args.rna,
         batchsize=model.config["basecaller"]["batchsize"],
         chunksize=model.config["basecaller"]["chunksize"],
         overlap=model.config["basecaller"]["overlap"],
@@ -195,7 +194,7 @@ def argparser():
     parser.add_argument("--skip", action="store_true", default=False)
     parser.add_argument("--no-trim", action="store_true", default=False)
     parser.add_argument("--save-ctc", action="store_true", default=False)
-    parser.add_argument("--revcomp", action="store_true", default=False)
+    #parser.add_argument("--revcomp", action="store_true", default=False)
     parser.add_argument("--rna", action="store_true", default=False)
     parser.add_argument("--recursive", action="store_true", default=False)
     quant_parser = parser.add_mutually_exclusive_group(required=False)
