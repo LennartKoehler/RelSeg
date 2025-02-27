@@ -9,7 +9,9 @@ for RoPE see equation (34) of RoPE paper
 reverse flag removed, dont need
 
 
+residuals cause instability i think, maybe use the idea from explain transformer beyond... for residuals
 
+the sum of inp_rel and out_rel of add2 is always the same, but since only one inp_relevance is passed on to the next function it is halfed in the out_relevance of that function, to see that one would alwys need to look at the first out_relevance
 
 
 

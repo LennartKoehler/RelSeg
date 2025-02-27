@@ -1,2 +1,2 @@
-from .model_modified import Model
+from .model_modified import Model #TESTVALUE
 from .basecall import basecall

@@ -27,6 +27,12 @@ from bonito.lrp_folder.writer import LRP_Writer
 
 def main(args):
 
+    search_algorithm = "viterbi"
+    if search_algorithm == "viterbi":
+        use_koi = False
+    else:
+        use_koi = True
+
     init(args.seed, args.device)
 
     try:
@@ -60,7 +66,7 @@ def main(args):
             overlap=args.overlap,
             batchsize=args.batchsize,
             quantize=args.quantize,
-            use_koi=True
+            use_koi=use_koi #TESTVALUE
         )
         model = model.apply(fuse_bn_)
     except FileNotFoundError:
@@ -133,6 +139,7 @@ def main(args):
         batchsize=model.config["basecaller"]["batchsize"],
         chunksize=model.config["basecaller"]["chunksize"],
         overlap=model.config["basecaller"]["overlap"],
+        search_algorithm=search_algorithm,
         save_test_relevance=args.save_relevance
     )
     

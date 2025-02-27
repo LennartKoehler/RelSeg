@@ -1,21 +1,4 @@
-def run_viterbi(y, seqdist):
-    # only use with use_koi = False
-    y_copy = y.detach().clone()
-    traceback_kmer = decode(seqdist, y_copy)[0,:]
-    kmers = [(position, kmer.detach().cpu()) for position, kmer in enumerate(traceback_kmer) if kmer % 5 != 0] # filter out those were new kmers are predicted, remove "N"
-    return kmers
 
-
-def decode(seqdist, scores):
-    scores = seqdist.posteriors(scores.to(torch.float32)) + 1e-8 # probabilities
-    tracebacks = viterbi(seqdist, scores.log()).to(torch.int16).T
-    return tracebacks
-
-    
-def viterbi(seqdist, scores):
-    traceback = seqdist.posteriors(scores, Max) # one motif (last dimension) in traceback has score 1 and the rest 0
-    a_traceback = traceback.argmax(2) #IMPORTANT take a_traceback (index of kmer (or base))
-    return a_traceback
 
 def plot_raw_output(y):
     y = y.detach().cpu().numpy()
@@ -170,3 +153,9 @@ def batched_lrp_loop(data, y, batched_positions):
         y_current.backward(retain_graph=True)
         relevance = data.grad[batch_indices_filtered, 0,:]
         yield (relevance, batch_indices_filtered, motif_indices)
+
+def one_hot(y, indices): # same as just taking the index
+    one_hot_tensor = torch.zeros_like(y, device=y.device)
+    one_hot_tensor[indices[0], indices[1], indices[2]] = 1
+    encoded = torch.mul(one_hot_tensor, y)
+    return encoded.sum()

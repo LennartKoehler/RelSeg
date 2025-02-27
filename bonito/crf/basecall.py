@@ -34,7 +34,6 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
         device = next(model.parameters()).device
         dtype = torch.float16 if half_supported() else torch.float32
         scores = model(batch.to(dtype).to(device)) # IMPORTANT here the neural network is run
-        total_params = sum(p.numel() for p in model.parameters())
 
         if reverse:
             scores = model.seqdist.reverse_complement(scores)

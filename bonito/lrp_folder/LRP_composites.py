@@ -24,12 +24,11 @@ lxt_comp = Composite({
         nn.SiLU: rules.IdentityRule,
         nn.GELU: rules.IdentityRule,
         nn.Tanh: rules.IdentityRule,
-        nn.Linear: lm.LinearEpsilon,
+        nn.Linear: lm.LinearAlphaBeta,
         #nn.Conv1d: rules.EpsilonRule,
 
-        #torch.exp: rules.identity(torch.exp),
         torch.softmax: lf.softmax,
-        F.glu: lf.linear_epsilon,
+        F.glu: lf.linear_alpha_beta,
         operator.add: lf.add2,
         torch.add: lf.add2,
         operator.mul: lf.mul2,
@@ -41,6 +40,6 @@ lxt_comp = Composite({
 conv_gamma = 0.01
 
 zennit_comp = LayerMapComposite([
-    (nn.Conv1d, z_rules.Gamma(conv_gamma)),
-    #(nn.Linear, z_rules.Gamma(lin_gamma)),
+    (nn.Conv1d, z_rules.WSquare(conv_gamma)),
+    # (nn.Linear, z_rules.WSquare(conv_gamma))
 ])
