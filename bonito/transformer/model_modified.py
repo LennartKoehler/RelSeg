@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from torch import nn
 import math
 
+from bonito.lrp_folder.LRP_composites import ProjSwigluMultiplication, AttentionValueMatmul
 from bonito.lrp_folder.RMSNorm import RMSNorm
 
 try:
@@ -21,31 +22,7 @@ except ImportError:
 
 from bonito.nn import from_dict, register, LinearCRFEncoder, MakeContiguous, Module, Permute, Serial
 
-def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0,
-        is_causal=False, scale=None, enable_gqa=False) -> torch.Tensor:
-    L, S = query.size(-2), key.size(-2)
-    scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
-    attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
-    if is_causal:
-        assert attn_mask is None
-        temp_mask = torch.ones(L, S, dtype=torch.bool, device=query.device).tril(diagonal=0)
-        attn_bias.masked_fill_(temp_mask.logical_not(), float("-Inf")) # TESTVALUE was "-Inf"
-        attn_bias.to(query.dtype)
 
-    if attn_mask is not None:
-        attn_bias.masked_fill_(attn_mask.logical_not(), float("-Inf")) # TESTVALUE was "-Inf"
- 
-
-    if enable_gqa:
-        key = key.repeat_interleave(query.size(-3)//key.size(-3), -3)
-        value = value.repeat_interleave(query.size(-3)//value.size(-3), -3)
-
-    attn_weight = query @ key.transpose(-2, -1)
-    attn_weight = attn_weight * torch.tensor(scale_factor, requires_grad=False)
-    attn_weight = attn_weight + attn_bias.detach()
-    attn_weight = torch.softmax(attn_weight, dim=-1)
-    #attn_weight = torch.dropout(attn_weight, dropout_p, train=True) # LXT no dropout (dont need since were not training)
-    return attn_weight @ value
 
 def deepnorm_params(depth):
     """
@@ -84,42 +61,58 @@ class MultiHeadAttention(Module):
         self.rotary_emb_flash = RotaryEmbedding(self.rotary_dim, interleaved=False)
 
         self.attn_window = (-1, -1) if attn_window is None else tuple(attn_window)
+        self.matmul = AttentionValueMatmul()
+        self.softmax = nn.Softmax(dim=-1)
 
-    def attn_func(self, q, k, v):
-        mask = sliding_window_mask(q.shape[1], self.attn_window, q.device)
-        attn_output = scaled_dot_product_attention(q.permute(0,2,1,3)[:,None,:,:,:], k.permute(0,2,1,3)[:,None,:,:,:], v.permute(0,2,1,3)[:,None,:,:,:], attn_mask=mask)
-        attn_output = attn_output.permute(0, 1, 3, 2, 4)
-        return attn_output
 
     def forward(self, x):
         N, T, _ = x.shape
+
         qkv = self.Wqkv(x).view(N, T, 3, self.nhead, self.head_dim)
-
-
+        v_val = qkv[:,:,2,:,:]
         q_val = qkv[:,:,0,:,:]
         k_val = qkv[:,:,1,:,:]
-        v_val = qkv[:,:,2,:,:]
+
         q_val = self.rotary_emb_flash.apply_rotary_embedding_not_flash_x(q_val)
         k_val = self.rotary_emb_flash.apply_rotary_embedding_not_flash_x(k_val)
 
 
-        attn_output = self.attn_func(q_val, k_val, v_val).reshape(N, T, self.d_model)
+        attn_mask = sliding_window_mask(q_val.shape[1], self.attn_window, q_val.device)
 
-        out = self.out_proj(attn_output)
+        query, key, value = q_val.permute(0,2,1,3)[:,None,:,:,:], k_val.permute(0,2,1,3)[:,None,:,:,:], v_val.permute(0,2,1,3)[:,None,:,:,:]
+
+        L, S = query.size(-2), key.size(-2)
+        scale_factor = 1 / math.sqrt(query.size(-1))
+        attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device).detach()
+  
+
+        if attn_mask is not None:
+            attn_bias.masked_fill_(attn_mask.logical_not(), float("-Inf"))
+
+        attn_weight = query @ key.transpose(-2, -1)
+        attn_weight = attn_weight * torch.tensor(scale_factor).detach()
+        attn_weight = attn_weight + attn_bias # IMPORTANT TODO here the relevance is lost because attn_bias is -Inf
+        attn_weight = self.softmax(attn_weight)
+        #attn_weight = torch.dropout(attn_weight, dropout_p, train=True) # LXT no dropout (dont need since were not training)
+        
+        # attn_out = self.matmul(attn_weight, value)
+        attn_out = attn_weight @ value
+        attn_out = attn_out.permute(0, 1, 3, 2, 4)
+
+        attn_out = attn_out.reshape(N, T, self.d_model)
+
+        out = self.out_proj(attn_out)
+
         return out
     
 
 
 
-    
-def swiglu(gate, y):
-    temp = gate * y
-    y = temp * 1/(torch.add(torch.tensor(1, requires_grad=False), torch.exp(-gate)))
-    return y
 
 
 
-class GatedMlp(nn.Module): # IMPORTANT simple implementation of mlp, should not be a problem for lxt, might need to think about activation functions
+
+class GatedMlp(Module): # IMPORTANT simple implementation of mlp, should not be a problem for lxt, might need to think about activation functions
     def __init__(
         self,
         in_features,
@@ -145,18 +138,31 @@ class GatedMlp(nn.Module): # IMPORTANT simple implementation of mlp, should not 
         self.fc1 = nn.Linear(in_features, 2 * hidden_features, bias=bias1, **factory_kwargs)
         self.activation = activation
         self.fc2 = nn.Linear(hidden_features, out_features, bias=bias2, **factory_kwargs)
+        self.silu = nn.SiLU(inplace=False)
+        self.swiglu_mul = ProjSwigluMultiplication()
+
 
     def forward(self, x): #IMPORTANT maybe call apply of swiglu?
         y = self.fc1(x)
-        if self.activation == "sigmoid":  # Special case for GLU
-            y = F.glu(y, dim=-1)
-        elif self.activation == "swiglu":  # Special case for SwiGLU
-            y, gate = y.chunk(2, dim=-1)
-            y = swiglu(gate, y) # IMPORTANT these if clauses only exist because there are special implementations for sigmoid and silu
-                                # running with sigmoid and not replacing it through glu has the exact same output but would just go through the else statement
-        else:
-            y, gate = y.chunk(2, dim=-1)
-            y = y * self.activation(gate)
+        # if self.activation == "sigmoid":  # Special case for GLU
+        #     y = F.glu(y, dim=-1)
+        # elif self.activation == "swiglu":  # Special case for SwiGLU
+        #     y, gate = y.chunk(2, dim=-1)
+        #     y = swiglu(gate, y) # IMPORTANT these if clauses only exist because there are special implementations for sigmoid and silu
+        #                         # running with sigmoid and not replacing it through glu has the exact same output but would just go through the else statement
+        # else:
+        #     y, gate = y.chunk(2, dim=-1)
+        #     y = y * self.activation(gate)
+
+        #siglu:
+        # y, gate = y.chunk(2, dim=-1)
+        # sig_gate = self.sigmoid(gate)
+        # swish = self.swiglu_mul(gate, sig_gate)  # Equivalent to gate * sigmoid(gate)
+        # y = self.swiglu_mul(swish, y)
+        y, gate = y.chunk(2, dim=-1)
+        y = self.swiglu_mul(y, self.silu(gate))
+
+ 
         y = self.fc2(y)
         return y if not self.return_residual else (y, x)
     

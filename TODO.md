@@ -10,3 +10,7 @@ TODO:
 basecall_and_lrp multiprocessing like original basecaller?
 
 in the backward, maybe in the conservation wrap, set all negative inputs to zero
+
+somewhere in the transformer (not attention) relevance is already lost
+
+replace attention with the attention of lxt, also use the initialization -> check that the forward stays the same

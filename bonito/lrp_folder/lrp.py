@@ -114,8 +114,7 @@ def argmax_segmentation():
 
 
 
-def forward_and_lrp(model_enc, input_signal, seqdist, search_algorithm, read,  save_relevance=False): #MAIN LRP FUNCTION
-    print(read)
+def forward_and_lrp(model_enc, input_signal, seqdist, search_algorithm,  save_relevance=False): #MAIN LRP FUNCTION
     device = next(model_enc.parameters()).device
     dtype = torch.float16 if half_supported() else torch.float32
     input_signal = input_signal.to(dtype).to(device)
@@ -167,7 +166,7 @@ def basecall_and_lrp(model, reads, search_algorithm, chunksize=4000, overlap=100
     model_enc = register(model.encoder, dummy_input, input_name)
 
     scores = (
-        (read, forward_and_lrp(model_enc, batch, model.seqdist, search_algorithm, read, save_test_relevance)) for read, batch in batches
+        (read, forward_and_lrp(model_enc, batch, model.seqdist, search_algorithm, save_test_relevance)) for read, batch in batches
     )
 
     results = (
