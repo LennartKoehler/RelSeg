@@ -12,6 +12,8 @@ import math
 from bonito.lrp_folder.LRP_composites import ProjSwigluMultiplication, AttentionValueMatmul
 from bonito.lrp_folder.RMSNorm import RMSNorm
 
+
+
 try:
     from flash_attn.layers.rotary import RotaryEmbedding
 except ImportError:
@@ -64,7 +66,6 @@ class MultiHeadAttention(Module):
         self.matmul = AttentionValueMatmul()
         self.softmax = nn.Softmax(dim=-1)
 
-
     def forward(self, x):
         N, T, _ = x.shape
 
@@ -95,8 +96,8 @@ class MultiHeadAttention(Module):
         attn_weight = self.softmax(attn_weight)
         #attn_weight = torch.dropout(attn_weight, dropout_p, train=True) # LXT no dropout (dont need since were not training)
         
-        # attn_out = self.matmul(attn_weight, value)
-        attn_out = attn_weight @ value
+        attn_out = self.matmul(attn_weight, value)
+        # attn_out = attn_weight @ value
         attn_out = attn_out.permute(0, 1, 3, 2, 4)
 
         attn_out = attn_out.reshape(N, T, self.d_model)
@@ -112,7 +113,7 @@ class MultiHeadAttention(Module):
 
 
 
-class GatedMlp(Module): # IMPORTANT simple implementation of mlp, should not be a problem for lxt, might need to think about activation functions
+class GatedMlp(nn.Module): # IMPORTANT simple implementation of mlp, should not be a problem for lxt, might need to think about activation functions
     def __init__(
         self,
         in_features,
@@ -161,8 +162,8 @@ class GatedMlp(Module): # IMPORTANT simple implementation of mlp, should not be 
         # y = self.swiglu_mul(swish, y)
         y, gate = y.chunk(2, dim=-1)
         y = self.swiglu_mul(y, self.silu(gate))
+        # y = y*self.silu(gate)
 
- 
         y = self.fc2(y)
         return y if not self.return_residual else (y, x)
     

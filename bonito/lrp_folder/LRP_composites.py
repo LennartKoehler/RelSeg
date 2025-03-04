@@ -27,6 +27,14 @@ class ProjSwigluMultiplication(nn.Module):
         return a * b
 
 # must be traced because of the functions, e.g. operator.add!
+
+conv_gamma = 0.01
+
+zennit_comp = LayerMapComposite([
+    (nn.Conv1d, z_rules.Gamma(conv_gamma)), #TESTVALUE
+    # (nn.Linear, z_rules.WSquare(conv_gamma))
+])
+
 lxt_comp = Composite({
 
         nn.SiLU: rules.IdentityRule,
@@ -38,22 +46,17 @@ lxt_comp = Composite({
         AttentionValueMatmul: rules.UniformEpsilonRule,
 
         nn.Linear: lm.LinearAlphaBeta,
-        #nn.Conv1d: rules.EpsilonRule,
+        # nn.Conv1d: rules.UniformRule,
 
         nn.Softmax: lm.SoftmaxDT,
-        F.glu: lf.linear_alpha_beta,
-        operator.add: lf.add2,
-        torch.add: lf.add2,
-        operator.mul: lf.mul2,
-        operator.truediv: lf.div2,
-        operator.matmul: lf.matmul,
-        torch.matmul: lf.matmul,
-        F.normalize: lf.normalize,
-    })
+        # F.glu: lf.linear_alpha_beta,
+        # operator.add: lf.add2,
+        # torch.add: lf.add2,
+        # operator.mul: lf.mul2,
+        # operator.truediv: lf.div2,
+        # operator.matmul: lf.matmul,
+        # torch.matmul: lf.matmul,
+        # F.normalize: lf.normalize,
+    }
+    , zennit_composite=zennit_comp)
 
-conv_gamma = 0.01
-
-zennit_comp = LayerMapComposite([
-    (nn.Conv1d, z_rules.WSquare(conv_gamma)),
-    # (nn.Linear, z_rules.WSquare(conv_gamma))
-])

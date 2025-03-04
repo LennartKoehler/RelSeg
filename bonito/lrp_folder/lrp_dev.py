@@ -16,10 +16,12 @@ def plot_relevances(relevances, raw_signal):
     old_relevance=np.array([0,0,0])
     axs[0].plot(raw_signal, color="black", linewidth=0.3, label="raw_data")
     for i,relevance in enumerate(relevances):
-        # relevance = np.abs(relevance)
-        # relevance = relevance/np.max(relevance)
+        relevance = np.abs(relevance)
+        relevance = relevance/np.max(relevance)
         # if sum(relevance) < 500:
         axs[1].plot(relevance, label="relevance", alpha=0.7)
+        segment = np.argmax(relevance)
+        axs[0].vlines(segment, -3, 3)
 
             # segment = np.argmax(relevance)
             # if segment < old_segment and segment > 450:

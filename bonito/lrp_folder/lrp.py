@@ -33,9 +33,10 @@ def save_relevance_and_signal(relevance_gen, input_signal, n_moves):
 
 def register(model, dummy_input, input_name): # the imported composites are used
     model.eval()
-    traced_model = lxt_comp.register(model, dummy_inputs={input_name: dummy_input}, verbose=False) # "input" / "x" TESTVALUE
-    zennit_comp.register(traced_model)
-    return traced_model
+
+    parent = lxt_comp.register(model, verbose=True)#, dummy_inputs={input_name: dummy_input}, verbose=False) # "input" / "x" TESTVALUE
+    # zennit_comp.register(traced_model)
+    return model
 
 
 def batch_positions(positions):
@@ -65,7 +66,6 @@ def batched_lrp_loop(data, y, batched_positions, traceback=None):
 
         else:
             y_current = y[batch_indices_filtered, positions_filtered, :].sum()
-            
         data.grad = None
         y_current.backward(retain_graph=True)
         relevance = data.grad[batch_indices_filtered, 0,:]
@@ -84,6 +84,7 @@ def segmentation_loop(relevance_gen, segmentation_function_out_shape, batchsize,
         z = torch.zeros((batchsize, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2
         z[batch_indices] = segment_indices # if a sample in the batch no longer has moves then just keep adding 0 as segment until all samples in batch have no more moves
         segments_batch[torch.arange(batchsize),motif_indices,:,:] = z
+        # assert False
 
     return segments_batch
 

@@ -57,6 +57,7 @@ def main(args):
             overlap=args.overlap,
             batchsize=args.batchsize,
             quantize=args.quantize,
+            use_koi=True
         )
         model = model.apply(fuse_bn_)
     except FileNotFoundError:
