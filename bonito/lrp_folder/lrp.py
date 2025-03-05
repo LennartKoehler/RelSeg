@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from bonito.lrp_folder.LRP_composites import lxt_comp, zennit_comp
+from bonito.lrp_folder.LRP_composites import lxt_comp, zennit_comp1,zennit_comp2, zennit_comp3, zennit_comp4, zennit_comp_first_conv
 from bonito.util import chunk, batchify, unbatchify, half_supported
 from koi.decode import to_str
 from scipy.signal import find_peaks
@@ -35,7 +35,14 @@ def register(model, dummy_input, input_name): # the imported composites are used
     model.eval()
 
     parent = lxt_comp.register(model, verbose=True)#, dummy_inputs={input_name: dummy_input}, verbose=False) # "input" / "x" TESTVALUE
-    # zennit_comp.register(traced_model)
+    zennit_comp_first_conv.register(model[0][0])
+
+    zennit_comp1.register(model[0][1])
+    zennit_comp2.register(model[0][2])
+    zennit_comp3.register(model[0][3])
+    zennit_comp4.register(model[0][4])
+
+
     return model
 
 

@@ -109,11 +109,6 @@ class MultiHeadAttention(Module):
     
 
 
-
-
-
-
-
 class GatedMlp(nn.Module): # IMPORTANT simple implementation of mlp, should not be a problem for lxt, might need to think about activation functions
     def __init__(
         self,
@@ -146,24 +141,10 @@ class GatedMlp(nn.Module): # IMPORTANT simple implementation of mlp, should not 
 
     def forward(self, x): #IMPORTANT maybe call apply of swiglu?
         y = self.fc1(x)
-        # if self.activation == "sigmoid":  # Special case for GLU
-        #     y = F.glu(y, dim=-1)
-        # elif self.activation == "swiglu":  # Special case for SwiGLU
-        #     y, gate = y.chunk(2, dim=-1)
-        #     y = swiglu(gate, y) # IMPORTANT these if clauses only exist because there are special implementations for sigmoid and silu
-        #                         # running with sigmoid and not replacing it through glu has the exact same output but would just go through the else statement
-        # else:
-        #     y, gate = y.chunk(2, dim=-1)
-        #     y = y * self.activation(gate)
 
-        #siglu:
-        # y, gate = y.chunk(2, dim=-1)
-        # sig_gate = self.sigmoid(gate)
-        # swish = self.swiglu_mul(gate, sig_gate)  # Equivalent to gate * sigmoid(gate)
-        # y = self.swiglu_mul(swish, y)
+        #swiglu:
         y, gate = y.chunk(2, dim=-1)
         y = self.swiglu_mul(y, self.silu(gate))
-        # y = y*self.silu(gate)
 
         y = self.fc2(y)
         return y if not self.return_residual else (y, x)

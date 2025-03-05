@@ -16,3 +16,4 @@ in the backward, maybe in the conservation wrap, set all negative inputs to zero
 set rules for conv1d (gamma?) except for first conv (can take neg values -> should be wsquare or lrp-0)
 
 check if forward pass stayed the same
+

@@ -1,7 +1,6 @@
 import operator
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 from lxt.core import Composite
@@ -12,7 +11,6 @@ import lxt.rules as rules
 
 from zennit.composites import LayerMapComposite
 import zennit.rules as z_rules
-from zennit.image import gridify
 
 #####################
 ### LRP Composite ###
@@ -30,9 +28,21 @@ class ProjSwigluMultiplication(nn.Module):
 
 conv_gamma = 0.01
 
-zennit_comp = LayerMapComposite([
-    (nn.Conv1d, z_rules.Gamma(conv_gamma)), #TESTVALUE
-    # (nn.Linear, z_rules.WSquare(conv_gamma))
+zennit_comp1 = LayerMapComposite([
+    (nn.Conv1d, z_rules.Gamma(conv_gamma))
+])
+zennit_comp2 = LayerMapComposite([
+    (nn.Conv1d, z_rules.Gamma(conv_gamma))
+])
+zennit_comp3 = LayerMapComposite([
+    (nn.Conv1d, z_rules.Gamma(conv_gamma))
+])
+zennit_comp4 = LayerMapComposite([
+    (nn.Conv1d, z_rules.Gamma(conv_gamma))
+])
+
+zennit_comp_first_conv = LayerMapComposite([
+    (nn.Conv1d, z_rules.Gamma(conv_gamma)),
 ])
 
 lxt_comp = Composite({
@@ -57,6 +67,6 @@ lxt_comp = Composite({
         # operator.matmul: lf.matmul,
         # torch.matmul: lf.matmul,
         # F.normalize: lf.normalize,
-    }
-    , zennit_composite=zennit_comp)
+    })
+    # , zennit_composite=zennit_comp)
 
