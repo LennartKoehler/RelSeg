@@ -8,7 +8,6 @@ def run_beam_search(scores, beam_width=32, beam_cut=100.0, scale=1.0, offset=0.0
             scores, beam_width=beam_width, beam_cut=beam_cut,
             scale=scale, offset=offset, blank_score=blank_score
         )
-        print(sequence[0,30:60])
     return {
         'moves': moves,
         'qstring': qstring,

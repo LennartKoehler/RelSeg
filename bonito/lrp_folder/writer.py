@@ -1,7 +1,7 @@
 from bonito.io import *
 
 def write_segmentation(read_id, sequence, segments, filename):
-    assert len(sequence) == segments.shape[0], f"problem, number of bases and number of segments doesn't match: (bases: {len(sequence)}, segments:{segments.shape[0]})"
+    assert len(sequence) == segments.shape[0], f"problem (read_id: {read_id}), number of bases and number of segments doesn't match: (bases: {len(sequence)}, segments:{segments.shape[0]})"
     with open(filename, "a") as f:
         for base, segment in zip(sequence, segments):
             f.write(f"{read_id}\t{base}")
@@ -58,8 +58,7 @@ class LRP_Writer(Writer):
                     *mods_tags,
                 ]
                 tags.append(f'mv:B:c,{encode_moves(res["moves"], res["stride"])}')
-
-
+                print(sum(res["moves"]))
                 if len(seq):
 
                     segments = res["segments"]

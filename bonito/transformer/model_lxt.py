@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from torch import nn
 import math
 
-from bonito.lrp_folder.LRP_composites import ProjSwigluMultiplication, AttentionValueMatmul
+# from bonito.lrp_folder.LRP_composites import ProjSwigluMultiplication, AttentionValueMatmul
 from bonito.lrp_folder.RMSNorm import RMSNorm
 
 import lxt.functional as lf
@@ -64,7 +64,7 @@ class MultiHeadAttention(Module):
         self.rotary_emb_flash = RotaryEmbedding(self.rotary_dim, interleaved=False)
 
         self.attn_window = (-1, -1) if attn_window is None else tuple(attn_window)
-        self.matmul = AttentionValueMatmul()
+        # self.matmul = AttentionValueMatmul()
         self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, x):
@@ -85,7 +85,7 @@ class MultiHeadAttention(Module):
 
         L, S = query.size(-2), key.size(-2)
         scale_factor = 1 / math.sqrt(query.size(-1))
-        attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device).detach()
+        attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
   
 
         if attn_mask is not None:
@@ -93,12 +93,12 @@ class MultiHeadAttention(Module):
 
         attn_weight = lf.matmul(query, key.transpose(-2, -1))
         attn_weight = lf.mul2(attn_weight, torch.tensor(scale_factor).detach())
-        attn_weight = lf.add2(attn_weight, attn_bias) # IMPORTANT TODO here the relevance is lost because attn_bias is -Inf
+        attn_weight = lf.add2(attn_weight, attn_bias.detach()) # IMPORTANT TODO here the relevance is lost because attn_bias is -Inf
         attn_weight = self.softmax(attn_weight)
         #attn_weight = torch.dropout(attn_weight, dropout_p, train=True) # LXT no dropout (dont need since were not training)
         
-        attn_out = self.matmul(attn_weight, value)
-        # attn_out = attn_weight @ value
+        # attn_out = self.matmul(attn_weight, value)
+        attn_out = lf.matmul(attn_weight, value)
         attn_out = attn_out.permute(0, 1, 3, 2, 4)
 
         attn_out = attn_out.reshape(N, T, self.d_model)
@@ -136,7 +136,7 @@ class GatedMlp(nn.Module): # IMPORTANT simple implementation of mlp, should not 
         self.activation = activation
         self.fc2 = nn.Linear(hidden_features, out_features, bias=bias2, **factory_kwargs)
         self.silu = nn.SiLU(inplace=False)
-        self.swiglu_mul = ProjSwigluMultiplication()
+        # self.swiglu_mul = ProjSwigluMultiplication()
 
 
     def forward(self, x): #IMPORTANT maybe call apply of swiglu?
@@ -144,8 +144,8 @@ class GatedMlp(nn.Module): # IMPORTANT simple implementation of mlp, should not 
 
         #swiglu:
         y, gate = y.chunk(2, dim=-1)
-        y = self.swiglu_mul(y, self.silu(gate))
-
+        # y = self.swiglu_mul(y, self.silu(gate))
+        y = lf.mul2(y, self.silu(gate))
         y = self.fc2(y)
         return y if not self.return_residual else (y, x)
     
@@ -205,8 +205,7 @@ class TransformerEncoderLayer(Module):
         x3 = self.ff(x2)
         residuals_2 = lf.mul2(self.deepnorm_alpha.detach(), x2)
         x3 = lf.add2(x3, residuals_2)
-        x4 = self.norm2(x3) #IMPORTANT problem here because i tihnk the xs might be changed inplace, atleast these "skip" connections are problematical
-
+        x4 = self.norm2(x3)
 
         return x4
 

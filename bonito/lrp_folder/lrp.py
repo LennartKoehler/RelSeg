@@ -6,6 +6,7 @@ from koi.decode import to_str
 from scipy.signal import find_peaks
 from bonito.lrp_folder.stitching import stitch_results
 from bonito.lrp_folder.search import run_beam_search, run_viterbi
+import time
 
 def fmt(stride, attrs, trimmed_samples, rna=False):
     segments = attrs['segments'].numpy()
@@ -20,40 +21,43 @@ def fmt(stride, attrs, trimmed_samples, rna=False):
 
 
 
-def save_relevance_and_signal(relevance_gen, input_signal, n_moves):
-    batchsize, _, seq_len = input_signal.shape
-    relevances = torch.zeros((batchsize,seq_len, n_moves), dtype=input_signal.dtype, device=input_signal.device)
-
-    for i, (relevance, batch_indices, motif_indices) in enumerate(relevance_gen):
-        relevances[batch_indices, :, i] = relevance
-
-    torch.save(relevances, "test_outputs/relevances.pkl")
-    torch.save(input_signal, "test_outputs/raw_signal.pkl")
-
 
 def register(model, dummy_input, input_name): # the imported composites are used
     model.eval()
 
-    parent = lxt_comp.register(model, verbose=True)#, dummy_inputs={input_name: dummy_input}, verbose=False) # "input" / "x" TESTVALUE
-    zennit_comp_first_conv.register(model[0][0])
-
-    zennit_comp1.register(model[0][1])
-    zennit_comp2.register(model[0][2])
-    zennit_comp3.register(model[0][3])
-    zennit_comp4.register(model[0][4])
-
+    parent = lxt_comp.register(model)#, dummy_inputs={input_name: dummy_input}, verbose=False) # "input" / "x" TESTVALUE
+    
+    if "namedserial" == model[0].name: # using beamsearch adds a namedserial ontop of conv
+        zennit_comp_first_conv.register(model[0][0][0])
+        zennit_comp1.register(model[0][0][1])
+        zennit_comp2.register(model[0][0][2])
+        zennit_comp3.register(model[0][0][3])
+        zennit_comp4.register(model[0][0][4])
+    else:
+        zennit_comp_first_conv.register(model[0][0])
+        zennit_comp1.register(model[0][1])
+        zennit_comp2.register(model[0][2])
+        zennit_comp3.register(model[0][3])
+        zennit_comp4.register(model[0][4])
 
     return model
 
 
 def batch_positions(positions):
+    """
+    get move positions (index where a base is called) and create a tensor with those indices
+    then backward() with one base for each sample of the batch instead of each individually
+    if one sample of the batch has fewer bases/moves than the other then its filled with -1
+    """
     result = torch.zeros_like(positions, dtype=torch.long)-1
     most_moves_in_batch = 0
-    for i,sample in enumerate(positions):
+    for i, sample in enumerate(positions):
         moves = torch.argwhere(sample==1).squeeze()
-        result[i,:len(moves)] = moves
-        if len(moves)>most_moves_in_batch:
-            most_moves_in_batch = len(moves)
+        l = len(moves)
+        result[i, :l] = moves
+        if l > most_moves_in_batch:
+            most_moves_in_batch = l
+
     result = result[:,:most_moves_in_batch]
     return result
 
@@ -63,43 +67,94 @@ def batched_lrp_loop(data, y, batched_positions, traceback=None):
     full_batch_indices = torch.arange(data.shape[0], dtype=torch.long)
 
     for positions in batched_positions.T:
-
-        batch_indices_filtered = full_batch_indices[positions!=-1]
-        positions_filtered = positions[positions!=-1].to(torch.int64)
-
+        batch_indices_filtered = full_batch_indices[positions!=-1] # batch_indices_filtered has the actually viable positions of bases for later
+        # if there are no more bases in a sample of a batch, then it just computes the last one over and over, because it cant do backward() without a "full" batch
         if traceback != None:
-            kmer = traceback[batch_indices_filtered, positions_filtered]
-            y_current = y[batch_indices_filtered, positions_filtered, kmer].sum()
+            kmer = traceback[full_batch_indices, positions]
+            y_current = y[full_batch_indices, positions, kmer].mean()*1000 # TESTVALUE so gradient doesnt go to 0 at end
 
         else:
-            y_current = y[batch_indices_filtered, positions_filtered, :].sum()
+            y_current = y[full_batch_indices, positions, :].mean()
+
         data.grad = None
         y_current.backward(retain_graph=True)
         relevance = data.grad[batch_indices_filtered, 0,:]
-        yield (relevance, batch_indices_filtered, positions)
 
+        yield (relevance, batch_indices_filtered, positions[positions!=-1])
+
+def wrapped_batched_lrp_loop(data, y, batched_positions, traceback=None, save_relevance=False):
+    if save_relevance:
+        batchsize, _, seq_len = data.shape
+        relevances = torch.zeros((batchsize,seq_len, batched_positions.shape[1]), dtype=data.dtype, device=data.device)
+    for i, (relevance, batch_indices_filtered, positions) in enumerate(batched_lrp_loop(data, y, batched_positions, traceback)):
+        if save_relevance:
+            relevances[batch_indices_filtered, :, i] = relevance
+        yield (relevance, batch_indices_filtered, positions)
+    if save_relevance:
+        torch.save(relevances, "test_outputs/relevances.pkl")
+        torch.save(data, "test_outputs/raw_signal.pkl")
+        assert False
+    # TODO rethink this, how do i appropriately save it, now it keeps getting overwritten
+
+
+
+# region
+# def segmentation_loop(relevance_gen, segmentation_function_out_shape, batchsize, downsampled_size):
+#     segmentation_function, segment_shape = segmentation_function_out_shape
+
+#     segments_batch = torch.zeros((batchsize, downsampled_size, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2 
+
+#     start_time = time.time()
+#     gen_time, seg_time, cpu_time, assign_time = 0, 0, 0, 0  # Track time for different steps
+
+#     for i, (relevance, batch_indices, motif_indices) in enumerate(relevance_gen):
+
+#         t0 = time.time()
+#         segment_indices = segmentation_function(relevance)  # Time for segmentation function
+#         t1 = time.time()
+#         seg_time += t1 - t0
+
+#         segment_indices = segment_indices.to("cpu")  # Time for transferring to CPU
+#         t2 = time.time()
+#         cpu_time += t2 - t1
+
+#         z = torch.zeros((batchsize, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2
+#         z[batch_indices] = segment_indices  # Time for assigning segment indices
+#         t3 = time.time()
+
+#         segments_batch[torch.arange(batchsize), motif_indices, :, :] = z  # Assigning to main batch tensor
+
+ 
+
+#         total_time = time.time() - start_time
+#         print(f"Total Time: {total_time:.4f}s")
+#         print(f"Segmentation Function Time: {seg_time:.4f}s")
+#         print(f"CPU Transfer Time: {cpu_time:.4f}s")
+#         print(f"Assignment Time: {assign_time:.4f}s")
+
+#     return segments_batch
+# endregion
 
 
 def segmentation_loop(relevance_gen, segmentation_function_out_shape, batchsize, downsampled_size):
     segmentation_function, segment_shape = segmentation_function_out_shape
-
     segments_batch = torch.zeros((batchsize, downsampled_size, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2 # this tensor is longer than needed and will never be filled because n_moves is shorter than downsampled_size, but its easier to unbatchify
 
     for i, (relevance, batch_indices, motif_indices) in enumerate(relevance_gen):
 
         segment_indices = segmentation_function(relevance).to("cpu")
-        z = torch.zeros((batchsize, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2
-        z[batch_indices] = segment_indices # if a sample in the batch no longer has moves then just keep adding 0 as segment until all samples in batch have no more moves
-        segments_batch[torch.arange(batchsize),motif_indices,:,:] = z
-        # assert False
+        segments_batch[batch_indices, motif_indices,:,:] = segment_indices
 
     return segments_batch
 
 def peak_segmentation(number_peaks):
     segment_shape = (number_peaks, 2)
+
     def func(relevances):
-        result = torch.zeros((relevances.shape[0], number_peaks, 2)) - 1 # not -1 because i dont want to delete later
+        result = torch.zeros((relevances.shape[0], number_peaks, 2)) - 1 # not -2 because i dont want to delete later
+
         for i,relevance in enumerate(relevances):
+
             relevance = torch.nn.functional.pad(relevance.abs(), (1,1), "constant", 0)  # pad at beginning and end if peak is at position 0 then it will not find the peak because there is nothing to the left
             relevance = relevance / (relevance.max())
             peaks = find_peaks(relevance.detach().cpu(), distance=3, height=0.2)
@@ -109,10 +164,13 @@ def peak_segmentation(number_peaks):
             peaks = np.flip(peaks, axis=1).T
             peaks = torch.from_numpy(peaks.copy())
             peaks = peaks[:number_peaks].to(torch.float)
-            result[i,:peaks.shape[0],torch.arange(2)] = peaks
+            result[i, :peaks.shape[0], torch.arange(2)] = peaks
+
             
         return result
+    
     return func, segment_shape
+
 
 def argmax_segmentation():
     def func(relevances):
@@ -141,16 +199,11 @@ def forward_and_lrp(model_enc, input_signal, seqdist, search_algorithm,  save_re
     moves = search_result["moves"]
     batched_moves = batch_positions(moves) # -> shape [#moves, nbatches]
 
-    relevance_gen = batched_lrp_loop(input_signal, scores, batched_moves, kmers)
 
-    if save_relevance: # just for development
-        save_relevance_and_signal(relevance_gen, input_signal, batched_moves.shape[1])
-        assert False # TESTVALUE
-
+    relevance_gen = wrapped_batched_lrp_loop(input_signal, scores, batched_moves, kmers, save_relevance)
 
     segments = segmentation_loop(relevance_gen, peak_segmentation(5), batchsize, downsampled_len)
     search_result["segments"] = segments
-
     return search_result
 
 
@@ -176,6 +229,15 @@ def basecall_and_lrp(model, reads, search_algorithm, chunksize=4000, overlap=100
     scores = (
         (read, forward_and_lrp(model_enc, batch, model.seqdist, search_algorithm, save_test_relevance)) for read, batch in batches
     )
+
+
+    # scores = next(scores)[1]
+    # moves = torch.argwhere(scores["moves"])
+    # print(moves)
+    # segments = scores["segments"]
+    # for move in moves:
+    #     print(segments[move[0], move[1], :, :])
+    # print("done")
 
     results = (
         (read, stitch_results(scores, end - start, chunksize, overlap, model.stride, "", reverse))

@@ -14,7 +14,8 @@ def stitch_results(results, length, size, overlap, stride, key, reverse=False):
         }
     if key == "segments":
         if length < size:
-            return results[0, :int(np.floor(length))]
+            return segments_single(results, size, overlap, length, stride, reverse=reverse)
+   
         return stitch_segments_indices(results, size, overlap, length, stride, reverse=reverse)
     else:
         if length < size:
@@ -23,6 +24,11 @@ def stitch_results(results, length, size, overlap, stride, key, reverse=False):
         return stitch(results, size, overlap, length, stride, reverse=reverse)
 
 
+def segments_single(chunks, chunksize, overlap, length, stride, reverse=False):
+    n_chunks, l, n_peaks, per_peak = chunks.shape
+    results = chunks[0, :int(np.floor(length / stride)),:,:]
+    results = results[results != -2].view(-1, n_peaks, per_peak)
+    return results
 
 
 def stitch_segments_indices(chunks, chunksize, overlap, length, stride, reverse=False):
@@ -48,6 +54,7 @@ def stitch_segments_indices(chunks, chunksize, overlap, length, stride, reverse=
     chunks[chunks == -2] = float("nan")
     chunks[:,:,:,0] += offset.view(-1,1,1)
 
+    print(chunks[-1, -1,:,:])
     segments = concat([
             chunks[0, :first_chunk_end_down,:,:], *chunks[1:-1, start_down:end_down,:,:], chunks[-1, start_down:,:,:]
         ])

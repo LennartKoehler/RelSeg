@@ -14,7 +14,10 @@ residuals cause instability i think, maybe use the idea from explain transformer
 the sum of inp_rel and out_rel of add2 is always the same, but since only one inp_relevance is passed on to the next function it is halfed in the out_relevance of that function, to see that one would alwys need to look at the first out_relevance
 
 
-
+TIME COMPLEXITY:
+what takes so long: forward takes 0.5s, backward takes 0.3s
+since we go backward for each base (ca. 300) this adds up
+-> lrp takes ~300x longer as basecalling (with chunksize 12000) -> 90 s/batch
 
 
 

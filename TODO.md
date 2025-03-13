@@ -17,3 +17,6 @@ set rules for conv1d (gamma?) except for first conv (can take neg values -> shou
 
 check if forward pass stayed the same
 
+using lrp the output basecall cuts off some part at the beginning and ned
+
+check changes in segmentation loop, if it fixed the bug

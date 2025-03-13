@@ -1,1 +1,845 @@
-(((Read('048f077a-a8a0-4dda-95f5-3c43be3a1274'), 0, 11688), (0, 3)), ((Read('250c8bd8-2ffa-41c3-a26e-33690e031756'), 0, 12061), (3, 4)))
+Total Time: 0.4429s
+Segmentation Function Time: 0.0015s
+CPU Transfer Time: 0.0000s
+Assignment Time: 0.0000s
+Generator Iteration Time: 0.0000s
+Total Time: 0.8092s
+Segmentation Function Time: 0.0027s
+CPU Transfer Time: 0.0000s
+Assignment Time: 0.0000s
+Generator Iteration Time: 0.0000s
+Total Time: 1.1756s
+Segmentation Function Time: 0.0039s
+CPU Transfer Time: 0.0000s
+Assignment Time: 0.0001s
+Generator Iteration Time: 0.0000s
+Total Time: 1.5426s
+Segmentation Function Time: 0.0056s
+CPU Transfer Time: 0.0000s
+Assignment Time: 0.0001s
+Generator Iteration Time: 0.0001s
+Total Time: 1.9094s
+Segmentation Function Time: 0.0074s
+CPU Transfer Time: 0.0000s
+Assignment Time: 0.0001s
+Generator Iteration Time: 0.0001s
+Total Time: 2.2759s
+Segmentation Function Time: 0.0092s
+CPU Transfer Time: 0.0000s
+Assignment Time: 0.0002s
+Generator Iteration Time: 0.0001s
+Total Time: 2.6423s
+Segmentation Function Time: 0.0109s
+CPU Transfer Time: 0.0000s
+Assignment Time: 0.0002s
+Generator Iteration Time: 0.0001s
+Total Time: 3.0096s
+Segmentation Function Time: 0.0128s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0002s
+Generator Iteration Time: 0.0002s
+Total Time: 3.3762s
+Segmentation Function Time: 0.0146s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0003s
+Generator Iteration Time: 0.0002s
+Total Time: 3.7426s
+Segmentation Function Time: 0.0163s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0003s
+Generator Iteration Time: 0.0002s
+Total Time: 4.1092s
+Segmentation Function Time: 0.0181s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0003s
+Generator Iteration Time: 0.0003s
+Total Time: 4.4758s
+Segmentation Function Time: 0.0198s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0004s
+Generator Iteration Time: 0.0003s
+Total Time: 4.8425s
+Segmentation Function Time: 0.0216s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0004s
+Generator Iteration Time: 0.0003s
+Total Time: 5.2087s
+Segmentation Function Time: 0.0233s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0005s
+Generator Iteration Time: 0.0003s
+Total Time: 5.5750s
+Segmentation Function Time: 0.0249s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0005s
+Generator Iteration Time: 0.0004s
+Total Time: 5.9420s
+Segmentation Function Time: 0.0267s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0005s
+Generator Iteration Time: 0.0004s
+Total Time: 6.3085s
+Segmentation Function Time: 0.0285s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0006s
+Generator Iteration Time: 0.0004s
+Total Time: 6.6753s
+Segmentation Function Time: 0.0302s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0006s
+Generator Iteration Time: 0.0004s
+Total Time: 7.0421s
+Segmentation Function Time: 0.0319s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0006s
+Generator Iteration Time: 0.0005s
+Total Time: 7.4085s
+Segmentation Function Time: 0.0337s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0007s
+Generator Iteration Time: 0.0005s
+Total Time: 7.7753s
+Segmentation Function Time: 0.0354s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0007s
+Generator Iteration Time: 0.0005s
+Total Time: 8.1418s
+Segmentation Function Time: 0.0371s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0007s
+Generator Iteration Time: 0.0005s
+Total Time: 8.5085s
+Segmentation Function Time: 0.0389s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0008s
+Generator Iteration Time: 0.0006s
+Total Time: 8.8752s
+Segmentation Function Time: 0.0406s
+CPU Transfer Time: 0.0001s
+Assignment Time: 0.0008s
+Generator Iteration Time: 0.0006s
+Total Time: 9.2423s
+Segmentation Function Time: 0.0425s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0009s
+Generator Iteration Time: 0.0006s
+Total Time: 9.6097s
+Segmentation Function Time: 0.0443s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0009s
+Generator Iteration Time: 0.0007s
+Total Time: 9.9763s
+Segmentation Function Time: 0.0461s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0009s
+Generator Iteration Time: 0.0007s
+Total Time: 10.3429s
+Segmentation Function Time: 0.0479s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0010s
+Generator Iteration Time: 0.0007s
+Total Time: 10.7089s
+Segmentation Function Time: 0.0497s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0010s
+Generator Iteration Time: 0.0007s
+Total Time: 11.0752s
+Segmentation Function Time: 0.0514s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0010s
+Generator Iteration Time: 0.0008s
+Total Time: 11.4417s
+Segmentation Function Time: 0.0532s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0011s
+Generator Iteration Time: 0.0008s
+Total Time: 11.8082s
+Segmentation Function Time: 0.0549s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0011s
+Generator Iteration Time: 0.0008s
+Total Time: 12.1746s
+Segmentation Function Time: 0.0567s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0011s
+Generator Iteration Time: 0.0008s
+Total Time: 12.5407s
+Segmentation Function Time: 0.0584s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0012s
+Generator Iteration Time: 0.0009s
+Total Time: 12.9071s
+Segmentation Function Time: 0.0602s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0012s
+Generator Iteration Time: 0.0009s
+Total Time: 13.2735s
+Segmentation Function Time: 0.0621s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0013s
+Generator Iteration Time: 0.0009s
+Total Time: 13.6400s
+Segmentation Function Time: 0.0638s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0013s
+Generator Iteration Time: 0.0009s
+Total Time: 14.0061s
+Segmentation Function Time: 0.0655s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0013s
+Generator Iteration Time: 0.0010s
+Total Time: 14.3726s
+Segmentation Function Time: 0.0672s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0014s
+Generator Iteration Time: 0.0010s
+Total Time: 14.7405s
+Segmentation Function Time: 0.0691s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0014s
+Generator Iteration Time: 0.0010s
+Total Time: 15.1118s
+Segmentation Function Time: 0.0703s
+CPU Transfer Time: 0.0002s
+Assignment Time: 0.0014s
+Generator Iteration Time: 0.0010s
+Total Time: 15.4794s
+Segmentation Function Time: 0.0721s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0015s
+Generator Iteration Time: 0.0011s
+Total Time: 15.8467s
+Segmentation Function Time: 0.0739s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0015s
+Generator Iteration Time: 0.0011s
+Total Time: 16.2131s
+Segmentation Function Time: 0.0757s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0015s
+Generator Iteration Time: 0.0011s
+Total Time: 16.5799s
+Segmentation Function Time: 0.0775s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0016s
+Generator Iteration Time: 0.0011s
+Total Time: 16.9465s
+Segmentation Function Time: 0.0792s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0016s
+Generator Iteration Time: 0.0012s
+Total Time: 17.3130s
+Segmentation Function Time: 0.0810s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0016s
+Generator Iteration Time: 0.0012s
+Total Time: 17.6791s
+Segmentation Function Time: 0.0828s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0017s
+Generator Iteration Time: 0.0012s
+Total Time: 18.0457s
+Segmentation Function Time: 0.0846s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0017s
+Generator Iteration Time: 0.0013s
+Total Time: 18.4123s
+Segmentation Function Time: 0.0864s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0018s
+Generator Iteration Time: 0.0013s
+Total Time: 18.7787s
+Segmentation Function Time: 0.0882s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0018s
+Generator Iteration Time: 0.0013s
+Total Time: 19.1455s
+Segmentation Function Time: 0.0900s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0018s
+Generator Iteration Time: 0.0013s
+Total Time: 19.5116s
+Segmentation Function Time: 0.0918s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0019s
+Generator Iteration Time: 0.0014s
+Total Time: 19.8779s
+Segmentation Function Time: 0.0935s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0019s
+Generator Iteration Time: 0.0014s
+Total Time: 20.2439s
+Segmentation Function Time: 0.0953s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0019s
+Generator Iteration Time: 0.0014s
+Total Time: 20.6103s
+Segmentation Function Time: 0.0971s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0020s
+Generator Iteration Time: 0.0014s
+Total Time: 20.9769s
+Segmentation Function Time: 0.0989s
+CPU Transfer Time: 0.0003s
+Assignment Time: 0.0020s
+Generator Iteration Time: 0.0015s
+Total Time: 21.3435s
+Segmentation Function Time: 0.1006s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0020s
+Generator Iteration Time: 0.0015s
+Total Time: 21.7098s
+Segmentation Function Time: 0.1026s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0021s
+Generator Iteration Time: 0.0015s
+Total Time: 22.0762s
+Segmentation Function Time: 0.1044s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0021s
+Generator Iteration Time: 0.0016s
+Total Time: 22.4424s
+Segmentation Function Time: 0.1062s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0022s
+Generator Iteration Time: 0.0016s
+Total Time: 22.8087s
+Segmentation Function Time: 0.1079s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0022s
+Generator Iteration Time: 0.0016s
+Total Time: 23.1749s
+Segmentation Function Time: 0.1097s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0022s
+Generator Iteration Time: 0.0016s
+Total Time: 23.5417s
+Segmentation Function Time: 0.1115s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0023s
+Generator Iteration Time: 0.0017s
+Total Time: 23.9090s
+Segmentation Function Time: 0.1133s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0023s
+Generator Iteration Time: 0.0017s
+Total Time: 24.2755s
+Segmentation Function Time: 0.1150s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0023s
+Generator Iteration Time: 0.0017s
+Total Time: 24.6421s
+Segmentation Function Time: 0.1168s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0024s
+Generator Iteration Time: 0.0017s
+Total Time: 25.0083s
+Segmentation Function Time: 0.1184s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0024s
+Generator Iteration Time: 0.0018s
+Total Time: 25.3752s
+Segmentation Function Time: 0.1204s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0025s
+Generator Iteration Time: 0.0018s
+Total Time: 25.7415s
+Segmentation Function Time: 0.1222s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0025s
+Generator Iteration Time: 0.0018s
+Total Time: 26.1072s
+Segmentation Function Time: 0.1240s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0025s
+Generator Iteration Time: 0.0019s
+Total Time: 26.4728s
+Segmentation Function Time: 0.1258s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0026s
+Generator Iteration Time: 0.0019s
+Total Time: 26.8385s
+Segmentation Function Time: 0.1276s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0026s
+Generator Iteration Time: 0.0019s
+Total Time: 27.2045s
+Segmentation Function Time: 0.1293s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0026s
+Generator Iteration Time: 0.0019s
+Total Time: 27.5723s
+Segmentation Function Time: 0.1311s
+CPU Transfer Time: 0.0004s
+Assignment Time: 0.0027s
+Generator Iteration Time: 0.0020s
+Total Time: 27.9391s
+Segmentation Function Time: 0.1330s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0027s
+Generator Iteration Time: 0.0020s
+Total Time: 28.3056s
+Segmentation Function Time: 0.1348s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0028s
+Generator Iteration Time: 0.0020s
+Total Time: 28.6719s
+Segmentation Function Time: 0.1367s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0028s
+Generator Iteration Time: 0.0020s
+Total Time: 29.0381s
+Segmentation Function Time: 0.1385s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0028s
+Generator Iteration Time: 0.0021s
+Total Time: 29.4045s
+Segmentation Function Time: 0.1403s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0029s
+Generator Iteration Time: 0.0021s
+Total Time: 29.7709s
+Segmentation Function Time: 0.1421s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0029s
+Generator Iteration Time: 0.0021s
+Total Time: 30.1378s
+Segmentation Function Time: 0.1439s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0029s
+Generator Iteration Time: 0.0022s
+Total Time: 30.5043s
+Segmentation Function Time: 0.1457s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0030s
+Generator Iteration Time: 0.0022s
+Total Time: 30.8743s
+Segmentation Function Time: 0.1476s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0030s
+Generator Iteration Time: 0.0022s
+Total Time: 31.2410s
+Segmentation Function Time: 0.1495s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0030s
+Generator Iteration Time: 0.0022s
+Total Time: 31.6078s
+Segmentation Function Time: 0.1513s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0031s
+Generator Iteration Time: 0.0023s
+Total Time: 31.9744s
+Segmentation Function Time: 0.1531s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0031s
+Generator Iteration Time: 0.0023s
+Total Time: 32.3411s
+Segmentation Function Time: 0.1550s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0031s
+Generator Iteration Time: 0.0023s
+Total Time: 32.7081s
+Segmentation Function Time: 0.1568s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0032s
+Generator Iteration Time: 0.0023s
+Total Time: 33.0741s
+Segmentation Function Time: 0.1587s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0032s
+Generator Iteration Time: 0.0024s
+Total Time: 33.4406s
+Segmentation Function Time: 0.1605s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0033s
+Generator Iteration Time: 0.0024s
+Total Time: 33.8067s
+Segmentation Function Time: 0.1624s
+CPU Transfer Time: 0.0005s
+Assignment Time: 0.0033s
+Generator Iteration Time: 0.0024s
+Total Time: 34.1729s
+Segmentation Function Time: 0.1642s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0033s
+Generator Iteration Time: 0.0024s
+Total Time: 34.5392s
+Segmentation Function Time: 0.1660s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0034s
+Generator Iteration Time: 0.0025s
+Total Time: 34.9053s
+Segmentation Function Time: 0.1678s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0034s
+Generator Iteration Time: 0.0025s
+Total Time: 35.2716s
+Segmentation Function Time: 0.1696s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0034s
+Generator Iteration Time: 0.0025s
+Total Time: 35.6383s
+Segmentation Function Time: 0.1715s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0035s
+Generator Iteration Time: 0.0025s
+Total Time: 36.0044s
+Segmentation Function Time: 0.1733s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0035s
+Generator Iteration Time: 0.0026s
+Total Time: 36.3706s
+Segmentation Function Time: 0.1751s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0035s
+Generator Iteration Time: 0.0026s
+Total Time: 36.7375s
+Segmentation Function Time: 0.1769s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0036s
+Generator Iteration Time: 0.0026s
+Total Time: 37.1039s
+Segmentation Function Time: 0.1787s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0036s
+Generator Iteration Time: 0.0027s
+Total Time: 37.4706s
+Segmentation Function Time: 0.1810s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0037s
+Generator Iteration Time: 0.0027s
+Total Time: 37.8370s
+Segmentation Function Time: 0.1828s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0037s
+Generator Iteration Time: 0.0027s
+Total Time: 38.2032s
+Segmentation Function Time: 0.1846s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0037s
+Generator Iteration Time: 0.0027s
+Total Time: 38.5696s
+Segmentation Function Time: 0.1864s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0038s
+Generator Iteration Time: 0.0028s
+Total Time: 38.9360s
+Segmentation Function Time: 0.1882s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0038s
+Generator Iteration Time: 0.0028s
+Total Time: 39.3024s
+Segmentation Function Time: 0.1901s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0038s
+Generator Iteration Time: 0.0028s
+Total Time: 39.6687s
+Segmentation Function Time: 0.1919s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0039s
+Generator Iteration Time: 0.0028s
+Total Time: 40.0350s
+Segmentation Function Time: 0.1937s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0039s
+Generator Iteration Time: 0.0029s
+Total Time: 40.4014s
+Segmentation Function Time: 0.1955s
+CPU Transfer Time: 0.0006s
+Assignment Time: 0.0040s
+Generator Iteration Time: 0.0029s
+Total Time: 40.7679s
+Segmentation Function Time: 0.1973s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0040s
+Generator Iteration Time: 0.0029s
+Total Time: 41.1344s
+Segmentation Function Time: 0.1991s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0040s
+Generator Iteration Time: 0.0029s
+Total Time: 41.5010s
+Segmentation Function Time: 0.2009s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0041s
+Generator Iteration Time: 0.0030s
+Total Time: 41.8668s
+Segmentation Function Time: 0.2027s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0041s
+Generator Iteration Time: 0.0030s
+Total Time: 42.2330s
+Segmentation Function Time: 0.2045s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0041s
+Generator Iteration Time: 0.0030s
+Total Time: 42.5992s
+Segmentation Function Time: 0.2062s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0042s
+Generator Iteration Time: 0.0030s
+Total Time: 42.9657s
+Segmentation Function Time: 0.2081s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0042s
+Generator Iteration Time: 0.0031s
+Total Time: 43.3326s
+Segmentation Function Time: 0.2103s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0043s
+Generator Iteration Time: 0.0031s
+Total Time: 43.6995s
+Segmentation Function Time: 0.2121s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0043s
+Generator Iteration Time: 0.0031s
+Total Time: 44.0656s
+Segmentation Function Time: 0.2139s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0043s
+Generator Iteration Time: 0.0032s
+Total Time: 44.4321s
+Segmentation Function Time: 0.2157s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0044s
+Generator Iteration Time: 0.0032s
+Total Time: 44.7989s
+Segmentation Function Time: 0.2177s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0044s
+Generator Iteration Time: 0.0032s
+Total Time: 45.1655s
+Segmentation Function Time: 0.2195s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0044s
+Generator Iteration Time: 0.0032s
+Total Time: 45.5314s
+Segmentation Function Time: 0.2207s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0045s
+Generator Iteration Time: 0.0033s
+Total Time: 45.9022s
+Segmentation Function Time: 0.2218s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0045s
+Generator Iteration Time: 0.0033s
+Total Time: 46.2687s
+Segmentation Function Time: 0.2228s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0045s
+Generator Iteration Time: 0.0033s
+Total Time: 46.6357s
+Segmentation Function Time: 0.2239s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0045s
+Generator Iteration Time: 0.0033s
+Total Time: 47.0009s
+Segmentation Function Time: 0.2248s
+CPU Transfer Time: 0.0007s
+Assignment Time: 0.0045s
+Generator Iteration Time: 0.0033s
+Total Time: 47.3657s
+Segmentation Function Time: 0.2258s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0046s
+Generator Iteration Time: 0.0033s
+Total Time: 47.7304s
+Segmentation Function Time: 0.2268s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0046s
+Generator Iteration Time: 0.0033s
+Total Time: 48.0955s
+Segmentation Function Time: 0.2277s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0046s
+Generator Iteration Time: 0.0034s
+Total Time: 48.4603s
+Segmentation Function Time: 0.2287s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0046s
+Generator Iteration Time: 0.0034s
+Total Time: 48.8251s
+Segmentation Function Time: 0.2296s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0046s
+Generator Iteration Time: 0.0034s
+Total Time: 49.1899s
+Segmentation Function Time: 0.2306s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0047s
+Generator Iteration Time: 0.0034s
+Total Time: 49.5547s
+Segmentation Function Time: 0.2315s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0047s
+Generator Iteration Time: 0.0034s
+Total Time: 49.9211s
+Segmentation Function Time: 0.2334s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0047s
+Generator Iteration Time: 0.0034s
+Total Time: 50.2865s
+Segmentation Function Time: 0.2343s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0047s
+Generator Iteration Time: 0.0035s
+Total Time: 50.6511s
+Segmentation Function Time: 0.2353s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0047s
+Generator Iteration Time: 0.0035s
+Total Time: 51.0162s
+Segmentation Function Time: 0.2362s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0048s
+Generator Iteration Time: 0.0035s
+Total Time: 51.3813s
+Segmentation Function Time: 0.2372s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0048s
+Generator Iteration Time: 0.0035s
+Total Time: 51.7463s
+Segmentation Function Time: 0.2381s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0048s
+Generator Iteration Time: 0.0035s
+Total Time: 52.1113s
+Segmentation Function Time: 0.2391s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0048s
+Generator Iteration Time: 0.0035s
+Total Time: 52.4762s
+Segmentation Function Time: 0.2400s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0048s
+Generator Iteration Time: 0.0035s
+Total Time: 52.8410s
+Segmentation Function Time: 0.2409s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0049s
+Generator Iteration Time: 0.0035s
+Total Time: 53.2062s
+Segmentation Function Time: 0.2419s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0049s
+Generator Iteration Time: 0.0036s
+Total Time: 53.5714s
+Segmentation Function Time: 0.2429s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0049s
+Generator Iteration Time: 0.0036s
+Total Time: 53.9380s
+Segmentation Function Time: 0.2441s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0049s
+Generator Iteration Time: 0.0036s
+Total Time: 54.3044s
+Segmentation Function Time: 0.2459s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0049s
+Generator Iteration Time: 0.0036s
+Total Time: 54.6704s
+Segmentation Function Time: 0.2470s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0050s
+Generator Iteration Time: 0.0036s
+Total Time: 55.0362s
+Segmentation Function Time: 0.2488s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0050s
+Generator Iteration Time: 0.0037s
+Total Time: 55.4018s
+Segmentation Function Time: 0.2503s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0050s
+Generator Iteration Time: 0.0037s
+Total Time: 55.7670s
+Segmentation Function Time: 0.2517s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0051s
+Generator Iteration Time: 0.0037s
+Total Time: 56.1330s
+Segmentation Function Time: 0.2535s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0051s
+Generator Iteration Time: 0.0037s
+Total Time: 56.4996s
+Segmentation Function Time: 0.2552s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0051s
+Generator Iteration Time: 0.0037s
+Total Time: 56.8655s
+Segmentation Function Time: 0.2569s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0051s
+Generator Iteration Time: 0.0038s
+Total Time: 57.2304s
+Segmentation Function Time: 0.2579s
+CPU Transfer Time: 0.0008s
+Assignment Time: 0.0052s
+Generator Iteration Time: 0.0038s
+Total Time: 57.5962s
+Segmentation Function Time: 0.2596s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0052s
+Generator Iteration Time: 0.0038s
+Total Time: 57.9619s
+Segmentation Function Time: 0.2610s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0052s
+Generator Iteration Time: 0.0038s
+Total Time: 58.3275s
+Segmentation Function Time: 0.2627s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0053s
+Generator Iteration Time: 0.0038s
+Total Time: 58.6938s
+Segmentation Function Time: 0.2642s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0053s
+Generator Iteration Time: 0.0039s
+Total Time: 59.0598s
+Segmentation Function Time: 0.2659s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0053s
+Generator Iteration Time: 0.0039s
+Total Time: 59.4255s
+Segmentation Function Time: 0.2672s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0053s
+Generator Iteration Time: 0.0039s
+Total Time: 59.7916s
+Segmentation Function Time: 0.2686s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0054s
+Generator Iteration Time: 0.0039s
+Total Time: 60.1574s
+Segmentation Function Time: 0.2699s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0054s
+Generator Iteration Time: 0.0039s
+Total Time: 60.5230s
+Segmentation Function Time: 0.2713s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0054s
+Generator Iteration Time: 0.0040s
+Total Time: 60.8889s
+Segmentation Function Time: 0.2726s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0055s
+Generator Iteration Time: 0.0040s
+Total Time: 61.2539s
+Segmentation Function Time: 0.2736s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0055s
+Generator Iteration Time: 0.0040s
+Total Time: 61.6675s
+Segmentation Function Time: 0.2745s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0055s
+Generator Iteration Time: 0.0040s
+Total Time: 62.0329s
+Segmentation Function Time: 0.2759s
+CPU Transfer Time: 0.0009s
+Assignment Time: 0.0055s
+Generator Iteration Time: 0.0041s

@@ -8,7 +8,7 @@ import torch
 from torch.nn import Module
 from torch.nn.init import orthogonal_
 from torch.nn.utils.fusion import fuse_conv_bn_eval
-
+from lxt.functional import mul2
 
 layers = {}
 
@@ -288,7 +288,7 @@ class LinearCRFEncoder(Module):
         if self.activation is not None:
             scores = self.activation(scores)
         if self.scale is not None:
-            scores = scores * self.scale
+            scores = mul2(scores, self.scale) # TESTVALUE
         if self.blank_score is not None and self.expand_blanks: # this adds the "empty/skip" base filled with blank scores: ACTG -> ACGTN
             T, N, C = scores.shape
             scores_view = scores.view(T, N, C // self.n_base, self.n_base)
