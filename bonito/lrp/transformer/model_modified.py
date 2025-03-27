@@ -10,7 +10,7 @@ from torch import nn
 import math
 
 # from bonito.lrp_folder.LRP_composites import ProjSwigluMultiplication, AttentionValueMatmul
-from bonito.lrp.RMSNorm import RMSNorm
+from bonito.lrp.transformer.RMSNorm import RMSNorm
 
 
 

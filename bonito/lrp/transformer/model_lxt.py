@@ -10,18 +10,12 @@ from torch import nn
 import math
 
 # from bonito.lrp_folder.LRP_composites import ProjSwigluMultiplication, AttentionValueMatmul
-from bonito.lrp.RMSNorm import RMSNorm
+from .RMSNorm import RMSNorm
+from .RoPE import RotaryEmbedding
 
 import lxt.functional as lf
 
 
-try:
-    from flash_attn.layers.rotary import RotaryEmbedding
-except ImportError:
-    logger.warning(
-        "please install flash-attn to use the transformer module: "
-        "`pip install flash-attn --no-build-isolation`"
-    )
 
 from bonito.nn import from_dict, register, LinearCRFEncoder, MakeContiguous, Module, Permute, Serial
 
