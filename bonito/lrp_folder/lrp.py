@@ -26,7 +26,9 @@ def register(model, dummy_input, input_name): # the imported composites are used
     model.eval()
 
     parent = lxt_comp.register(model)#, dummy_inputs={input_name: dummy_input}, verbose=False) # "input" / "x" TESTVALUE
-    
+
+
+
     if "namedserial" == model[0].name: # using beamsearch adds a namedserial ontop of conv
         zennit_comp_first_conv.register(model[0][0][0])
         zennit_comp1.register(model[0][0][1])
@@ -41,7 +43,6 @@ def register(model, dummy_input, input_name): # the imported composites are used
         zennit_comp4.register(model[0][4])
 
     return model
-
 
 def batch_positions(positions):
     """
@@ -74,7 +75,7 @@ def batched_lrp_loop(data, y, batched_positions, traceback=None):
             y_current = y[full_batch_indices, positions, kmer].mean()*1000 # TESTVALUE so gradient doesnt go to 0 at end
 
         else:
-            y_current = y[full_batch_indices, positions, :].mean()
+            y_current = y[full_batch_indices, positions, :].mean()*1000
 
         data.grad = None
         y_current.backward(retain_graph=True)
@@ -82,7 +83,10 @@ def batched_lrp_loop(data, y, batched_positions, traceback=None):
 
         yield (relevance, batch_indices_filtered, positions[positions!=-1])
 
+RELEVANCE_INDEX = 0  # Global counter
 def wrapped_batched_lrp_loop(data, y, batched_positions, traceback=None, save_relevance=False):
+    global RELEVANCE_INDEX
+
     if save_relevance:
         batchsize, _, seq_len = data.shape
         relevances = torch.zeros((batchsize,seq_len, batched_positions.shape[1]), dtype=data.dtype, device=data.device)
@@ -90,10 +94,11 @@ def wrapped_batched_lrp_loop(data, y, batched_positions, traceback=None, save_re
         if save_relevance:
             relevances[batch_indices_filtered, :, i] = relevance
         yield (relevance, batch_indices_filtered, positions)
-    if save_relevance:
-        torch.save(relevances, "test_outputs/relevances.pkl")
-        torch.save(data, "test_outputs/raw_signal.pkl")
-        assert False
+    if save_relevance: # not very elegant way of saving the relevance
+        torch.save(relevances, f"relevance/relevances_{RELEVANCE_INDEX}.pkl")
+        torch.save(data, f"relevance/signals_{RELEVANCE_INDEX}.pkl")
+        RELEVANCE_INDEX += 1
+        # assert False
     # TODO rethink this, how do i appropriately save it, now it keeps getting overwritten
 
 
@@ -143,6 +148,8 @@ def segmentation_loop(relevance_gen, segmentation_function_out_shape, batchsize,
     for i, (relevance, batch_indices, motif_indices) in enumerate(relevance_gen):
 
         segment_indices = segmentation_function(relevance).to("cpu")
+        z = torch.zeros((batchsize, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2
+        z[batch_indices] = segment_indices # if a sample in the batch no longer has moves then just keep adding 0 as segment until all samples in batch have no more moves
         segments_batch[batch_indices, motif_indices,:,:] = segment_indices
 
     return segments_batch
@@ -215,6 +222,8 @@ def basecall_and_lrp(model, reads, search_algorithm, chunksize=4000, overlap=100
     """
     Basecalls a set of reads.
     """
+    # reads = (read for read in reads if read.read_id == "3b73c140-6ce2-461a-a36a-af28e2afb77f")
+
     chunks = (
         ((read, 0, read.signal.shape[-1]), chunk(torch.from_numpy(read.signal), chunksize, overlap))
         for read in reads
@@ -229,15 +238,6 @@ def basecall_and_lrp(model, reads, search_algorithm, chunksize=4000, overlap=100
     scores = (
         (read, forward_and_lrp(model_enc, batch, model.seqdist, search_algorithm, save_test_relevance)) for read, batch in batches
     )
-
-
-    # scores = next(scores)[1]
-    # moves = torch.argwhere(scores["moves"])
-    # print(moves)
-    # segments = scores["segments"]
-    # for move in moves:
-    #     print(segments[move[0], move[1], :, :])
-    # print("done")
 
     results = (
         (read, stitch_results(scores, end - start, chunksize, overlap, model.stride, "", reverse))

@@ -30,6 +30,7 @@ def compute_scores(model, batch, beam_width=32, beam_cut=100.0, scale=1.0, offse
     Compute scores for model.
     """
 
+
     with torch.inference_mode():
         device = next(model.parameters()).device
         dtype = torch.float16 if half_supported() else torch.float32

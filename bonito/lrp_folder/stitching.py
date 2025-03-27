@@ -54,7 +54,6 @@ def stitch_segments_indices(chunks, chunksize, overlap, length, stride, reverse=
     chunks[chunks == -2] = float("nan")
     chunks[:,:,:,0] += offset.view(-1,1,1)
 
-    print(chunks[-1, -1,:,:])
     segments = concat([
             chunks[0, :first_chunk_end_down,:,:], *chunks[1:-1, start_down:end_down,:,:], chunks[-1, start_down:,:,:]
         ])

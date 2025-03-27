@@ -133,6 +133,10 @@ def main(args):
         if num_reads is not None:
             num_reads = min(num_reads, args.max_reads)
 
+    if args.save_relevance:
+        if not os.path.exists("relevance"): # not very elegant
+            os.makedirs("relevance")
+
 
     results = basecall_and_lrp(
         model, reads, reverse=False, rna=args.rna,

@@ -58,9 +58,8 @@ class LRP_Writer(Writer):
                     *mods_tags,
                 ]
                 tags.append(f'mv:B:c,{encode_moves(res["moves"], res["stride"])}')
-                print(sum(res["moves"]))
-                if len(seq):
 
+                if len(seq):
                     segments = res["segments"]
                     write_segmentation(read_id, seq, segments, segment_filename)
 
