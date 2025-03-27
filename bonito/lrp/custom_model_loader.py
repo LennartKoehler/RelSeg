@@ -1,6 +1,6 @@
-from util import *
-from util import __models_dir__
-from util import _load_model
+from bonito.util import *
+from bonito.util import __models_dir__
+from bonito.util import _load_model
 
 def load_model_lrp(dirname, device, weights=None, half=None, chunksize=None, batchsize=None, overlap=None, quantize=False, use_koi=False):
     """
