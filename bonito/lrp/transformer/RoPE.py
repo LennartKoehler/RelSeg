@@ -2,7 +2,6 @@
 # taken from flash_attn with minor changes
 
 import torch
-from einops import rearrange
 
 from lxt import functional as lf
 
@@ -14,7 +13,7 @@ def rotate_half(x, interleaved=False):
         return torch.cat((-x2, x1), dim=-1)
     else:
         x1, x2 = x[..., ::2], x[..., 1::2]
-        return rearrange(torch.stack((-x2, x1), dim=-1), "... d two -> ... (d two)", two=2)
+        return torch.stack((-x2, x1), dim=-1).reshape(*x1.shape[:-1], -1)
 
 @torch.fx.wrap
 def apply_rotary_emb_torch(x, cos, sin, interleaved=False):
@@ -160,7 +159,7 @@ class RotaryEmbedding(torch.nn.Module):
                     torch.arange(seqlen, dtype=self.scale.dtype, device=self.scale.device)
                     - seqlen // 2
                 ) / self.scale_base
-                scale = self.scale.to(device=power.device) ** rearrange(power, "s -> s 1")
+                scale = self.scale.to(device=power.device) ** power.unsqueeze(-1)
                 # We want the multiplication by scale to happen in fp32
                 self._cos_cached = (torch.cos(freqs) * scale).to(dtype)
                 self._sin_cached = (torch.sin(freqs) * scale).to(dtype)
