@@ -1,16 +1,14 @@
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 from bonito.cli import basecaller, download, duplex, evaluate, export, train, view
-from bonito.lrp_folder import run_lrp
-from bonito import lrp_folder
+from bonito.lrp import run_lrp
+
 modules = [
     'basecaller', 'download', 'duplex', 'evaluate', 'export', 'train', 'view', 'run_lrp'
 ]
 
 __version__ = '0.8.1'
 
-# import multiprocessing
-# multiprocessing.set_start_method("spawn")
 
 
 def main():

@@ -19,3 +19,5 @@ torch==2.1.2
 ont-fast5-api
 ont-koi
 ont-remora
+zennit==0.5.1
+lxt==0.6.1

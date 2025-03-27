@@ -21,8 +21,10 @@ from bonito.cli.download import Downloader, models, __models_dir__
 from bonito.multiprocessing_bonito import process_cancel, process_itemmap
 from bonito.util import column_to_set, load_symbol, load_model, init, tqdm_environ
 
-from bonito.lrp_folder.lrp import basecall_and_lrp
-from bonito.lrp_folder.writer import LRP_Writer
+from bonito.lrp.main_lrp import basecall_and_lrp
+from bonito.lrp.writer import LRP_Writer
+from bonito.lrp.custom_model_loader import load_model_lrp
+from bonito.lrp.transformer.nn import LinearCRFEncoder # just to register it
 
 
 def main(args):
@@ -56,9 +58,13 @@ def main(args):
         sys.stderr.write("> downloading model\n")
         Downloader(__models_dir__).download(args.model_directory)
 
+    if args.model_directory != "rna004_130bps_sup@v5.0.0":
+        sys.stderr.write("> error: only model rna004_130bps_sup@v5.0.0 is tested\n")
+        exit(1)
+
     sys.stderr.write(f"> loading model {args.model_directory}\n")
     try:
-        model = load_model(
+        model = load_model_lrp(
             args.model_directory,
             args.device,
             weights=args.weights if args.weights > 0 else None,
@@ -223,3 +229,4 @@ def argparser():
     parser.add_argument('-v', '--verbose', action='count', default=0)
     parser.add_argument('--save-relevance',action="store_true", default=False)
     return parser
+

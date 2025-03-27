@@ -1,11 +1,11 @@
 import torch
 import numpy as np
-from bonito.lrp_folder.LRP_composites import lxt_comp, zennit_comp1,zennit_comp2, zennit_comp3, zennit_comp4, zennit_comp_first_conv
+from bonito.lrp.LRP_composites import lxt_comp, zennit_comp1,zennit_comp2, zennit_comp3, zennit_comp4, zennit_comp_first_conv
 from bonito.util import chunk, batchify, unbatchify, half_supported
 from koi.decode import to_str
 from scipy.signal import find_peaks
-from bonito.lrp_folder.stitching import stitch_results
-from bonito.lrp_folder.search import run_beam_search, run_viterbi
+from bonito.lrp.stitching import stitch_results
+from bonito.lrp.search import run_beam_search, run_viterbi
 import time
 
 def fmt(stride, attrs, trimmed_samples, rna=False):

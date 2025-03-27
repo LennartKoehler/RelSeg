@@ -1,2 +1,2 @@
-from .model_lxt import Model #TESTVALUE
+from .model import Model
 from .basecall import basecall

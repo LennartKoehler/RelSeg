@@ -8,7 +8,6 @@ import torch
 from torch.nn import Module
 from torch.nn.init import orthogonal_
 from torch.nn.utils.fusion import fuse_conv_bn_eval
-from lxt.functional import mul2
 
 layers = {}
 
@@ -284,11 +283,11 @@ class LinearCRFEncoder(Module):
     def forward(self, x):
         if self.permute is not None:
             x = x.permute(*self.permute)
-        scores = self.linear(x) #IMPORTANT this linear layer makes every single value negative. this must have something to do with the beamsearch afterwards and the training
+        scores = self.linear(x)
         if self.activation is not None:
             scores = self.activation(scores)
         if self.scale is not None:
-            scores = mul2(scores, self.scale) # TESTVALUE
+            scores = scores * self.scale
         if self.blank_score is not None and self.expand_blanks: # this adds the "empty/skip" base filled with blank scores: ACTG -> ACGTN
             T, N, C = scores.shape
             scores_view = scores.view(T, N, C // self.n_base, self.n_base)

@@ -7,6 +7,7 @@ from lxt.core import Composite
 import lxt.functional as lf
 import lxt.modules as lm
 import lxt.rules as rules
+from .lrp_rules import LinearAlphaBeta
 
 
 from zennit.composites import LayerMapComposite
@@ -54,7 +55,7 @@ lxt_comp = Composite({
         # ProjSwigluMultiplication: rules.UniformRule,
         # AttentionValueMatmul: rules.UniformEpsilonRule,
 
-        nn.Linear: lm.LinearAlphaBeta,
+        nn.Linear: LinearAlphaBeta,
         # nn.Conv1d: rules.UniformRule,
 
         nn.Softmax: lm.SoftmaxDT,
