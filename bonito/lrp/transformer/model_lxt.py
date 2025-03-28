@@ -13,7 +13,7 @@ import math
 from .RMSNorm import RMSNorm
 from .RoPE import RotaryEmbedding
 
-import lxt.functional as lf
+import bonito.lrp.lxt_adjustments as lf
 
 
 
@@ -37,7 +37,6 @@ def sliding_window_mask(seq_len, window, device):
     band = band * torch.tril(band, diagonal=window[1])
     band = band.to(torch.bool).to(device)
     return band
-
 
 
 

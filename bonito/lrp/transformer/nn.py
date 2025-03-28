@@ -1,4 +1,4 @@
-import lxt.functional as lf
+import bonito.lrp.lxt_adjustments as lf
 from bonito.nn import *
 
 #this replaces the crfencoder, one multiplication has to be replaces

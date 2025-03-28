@@ -1,12 +1,11 @@
 import torch
 import numpy as np
-from bonito.lrp.LRP_composites import lxt_comp, zennit_comp1,zennit_comp2, zennit_comp3, zennit_comp4, zennit_comp_first_conv
+from bonito.lrp.lrp_composites import lxt_comp, zennit_comp1,zennit_comp2, zennit_comp3, zennit_comp4, zennit_comp_first_conv
 from bonito.util import chunk, batchify, unbatchify, half_supported
 from koi.decode import to_str
 from scipy.signal import find_peaks
 from bonito.lrp.stitching import stitch_results
 from bonito.lrp.search import run_beam_search, run_viterbi
-import time
 
 def fmt(stride, attrs, trimmed_samples, rna=False):
     segments = attrs['segments'].numpy()
@@ -101,44 +100,6 @@ def wrapped_batched_lrp_loop(data, y, batched_positions, traceback=None, save_re
         # assert False
     # TODO rethink this, how do i appropriately save it, now it keeps getting overwritten
 
-
-
-# region
-# def segmentation_loop(relevance_gen, segmentation_function_out_shape, batchsize, downsampled_size):
-#     segmentation_function, segment_shape = segmentation_function_out_shape
-
-#     segments_batch = torch.zeros((batchsize, downsampled_size, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2 
-
-#     start_time = time.time()
-#     gen_time, seg_time, cpu_time, assign_time = 0, 0, 0, 0  # Track time for different steps
-
-#     for i, (relevance, batch_indices, motif_indices) in enumerate(relevance_gen):
-
-#         t0 = time.time()
-#         segment_indices = segmentation_function(relevance)  # Time for segmentation function
-#         t1 = time.time()
-#         seg_time += t1 - t0
-
-#         segment_indices = segment_indices.to("cpu")  # Time for transferring to CPU
-#         t2 = time.time()
-#         cpu_time += t2 - t1
-
-#         z = torch.zeros((batchsize, segment_shape[0], segment_shape[1]), dtype=torch.float) - 2
-#         z[batch_indices] = segment_indices  # Time for assigning segment indices
-#         t3 = time.time()
-
-#         segments_batch[torch.arange(batchsize), motif_indices, :, :] = z  # Assigning to main batch tensor
-
- 
-
-#         total_time = time.time() - start_time
-#         print(f"Total Time: {total_time:.4f}s")
-#         print(f"Segmentation Function Time: {seg_time:.4f}s")
-#         print(f"CPU Transfer Time: {cpu_time:.4f}s")
-#         print(f"Assignment Time: {assign_time:.4f}s")
-
-#     return segments_batch
-# endregion
 
 
 def segmentation_loop(relevance_gen, segmentation_function_out_shape, batchsize, downsampled_size):

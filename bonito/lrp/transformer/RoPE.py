@@ -3,7 +3,7 @@
 
 import torch
 
-from lxt import functional as lf
+import bonito.lrp.lxt_adjustments as lf
 
 
 

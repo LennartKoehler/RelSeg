@@ -59,10 +59,10 @@ def plot_relevances(relevances, raw_signal, out_name):
     plt.savefig(out_name, dpi=200, format="pdf")
 
 if __name__ == "__main__":
-    relevances = torch.load("relevance/relevances_2.pkl")
-    signal = torch.load("relevance/signals_2.pkl")
+    relevances = torch.load("relevance/relevances_0.pkl")
+    signal = torch.load("relevance/signals_0.pkl")
 
-    plot_relevances(relevances[1,:,14:15], signal[1,0,:], "plots/test.pdf")
+    plot_relevances(relevances[0,:,:], signal[0,0,:], "plots/test.pdf")
 
     # plot_relevances(relevances[1,:,14:15], signal[1,0,:], "plots/lrp_single.pdf")
     # plot_relevances(relevances[1,:,:], signal[1,0,:], "plots/lrp_all.pdf")
