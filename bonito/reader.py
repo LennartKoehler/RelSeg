@@ -37,7 +37,7 @@ class Reader:
                 "DeprecationWarning: fast5 support will be deprecated in a "
                 "future bonito version. Please use pod5\n"
             )
-        _reader = import_module(f"bonito.{self.fmt}_wrapper")#TESTVALUE _wrapper
+        _reader = import_module(f"bonito.{self.fmt}")
         self._get_reads = getattr(_reader, "get_reads")
         self._get_read_groups = getattr(_reader, "get_read_groups")
 
