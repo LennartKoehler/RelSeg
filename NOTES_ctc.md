@@ -1,2 +1,0 @@
-ctc is used because one sequence usually has multiple reads or at least its complement
--> beam search or viterbi best path is used here for the decoding and extended in more dimensions to fit all reads of a sequence

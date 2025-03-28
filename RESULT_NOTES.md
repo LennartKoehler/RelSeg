@@ -1,3 +1,0 @@
-egal welches motif sich in der tabelle angeschaut wird, das model schaut sich immer die selbe stelle an
-denke das ist zu erwarten, im gegensatz zu hund/katze bild, wo sich beide auf dem bild befinden und entweder das eine oder das andere den output beeinflusst, wird sich hier immer die selbe stelle angeschaut und irgendein motif bekommt eine höhere "wahrscheinlichkeit"
-eher wie segmentierung, nicht klassifizierung
