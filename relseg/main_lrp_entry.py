@@ -18,11 +18,21 @@ from bonito.reader import read_chunks, Reader
 from bonito.io import CTCWriter, Writer, biofmt
 from bonito.mod_util import call_mods, load_mods_model
 from bonito.cli.download import Downloader, models, __models_dir__
-from bonito.multiprocessing_bonito import process_cancel, process_itemmap
+from bonito.multiprocessing import process_cancel, process_itemmap
 from bonito.util import column_to_set, load_symbol, load_model, init, tqdm_environ
+
+from relseg.lrp import basecall_and_lrp
+from relseg.writer import LRP_Writer
+from relseg.custom_model_loader import load_model_lrp
+from relseg.transformer.nn import LinearCRFEncoder # just to register it
 
 
 def main(args):
+    search_algorithm = "viterbi"
+    if search_algorithm == "viterbi":
+        use_koi = False
+    else:
+        use_koi = True
 
     init(args.seed, args.device)
 
@@ -47,9 +57,13 @@ def main(args):
         sys.stderr.write("> downloading model\n")
         Downloader(__models_dir__).download(args.model_directory)
 
+    if args.model_directory != "rna004_130bps_sup@v5.0.0":
+        sys.stderr.write("> error: only model rna004_130bps_sup@v5.0.0 is tested\n")
+        exit(1)
+
     sys.stderr.write(f"> loading model {args.model_directory}\n")
     try:
-        model = load_model(
+        model = load_model_lrp(
             args.model_directory,
             args.device,
             weights=args.weights if args.weights > 0 else None,
@@ -57,7 +71,7 @@ def main(args):
             overlap=args.overlap,
             batchsize=args.batchsize,
             quantize=args.quantize,
-            use_koi=True
+            use_koi=use_koi #TESTVALUE
         )
         model = model.apply(fuse_bn_)
     except FileNotFoundError:
@@ -65,11 +79,10 @@ def main(args):
         sys.stderr.write(f"> available models:\n")
         for model in sorted(models): sys.stderr.write(f" - {model}\n")
         exit(1)
-        
+
     if args.verbose:
         sys.stderr.write(f"> model basecaller params: {model.config['basecaller']}\n")
 
-    basecall = load_symbol(args.model_directory, "basecall")
 
     mods_model = None
     if args.modified_base_model is not None or args.modified_bases is not None:
@@ -125,24 +138,18 @@ def main(args):
         if num_reads is not None:
             num_reads = min(num_reads, args.max_reads)
 
-    if args.save_ctc:
-        reads = (
-            chunk for read in reads
-            for chunk in read_chunks(
-                read,
-                chunksize=model.config["basecaller"]["chunksize"],
-                overlap=model.config["basecaller"]["overlap"]
-            )
-        )
-        ResultsWriter = CTCWriter
-    else:
-        ResultsWriter = Writer
+    if args.save_relevance:
+        if not os.path.exists("relevance"): # not very elegant
+            os.makedirs("relevance")
 
-    results = basecall(
-        model, reads, reverse=args.revcomp, rna=args.rna,
+
+    results = basecall_and_lrp(
+        model, reads, reverse=False, rna=args.rna,
         batchsize=model.config["basecaller"]["batchsize"],
         chunksize=model.config["basecaller"]["chunksize"],
-        overlap=model.config["basecaller"]["overlap"]
+        overlap=model.config["basecaller"]["overlap"],
+        search_algorithm=search_algorithm,
+        save_test_relevance=args.save_relevance
     )
     
     if mods_model is not None:
@@ -164,7 +171,7 @@ def main(args):
         writer_kwargs['rna'] = args.rna
         writer_kwargs['min_accuracy'] = args.min_accuracy_save_ctc
         
-    writer = ResultsWriter(
+    writer = LRP_Writer(
         fmt.mode, tqdm(results, desc="> calling", unit=" reads", leave=False,
                        total=num_reads, smoothing=0, ascii=True, ncols=100,
                        **tqdm_environ()),
@@ -203,7 +210,7 @@ def argparser():
     parser.add_argument("--skip", action="store_true", default=False)
     parser.add_argument("--no-trim", action="store_true", default=False)
     parser.add_argument("--save-ctc", action="store_true", default=False)
-    parser.add_argument("--revcomp", action="store_true", default=False)
+    #parser.add_argument("--revcomp", action="store_true", default=False)
     parser.add_argument("--rna", action="store_true", default=False)
     parser.add_argument("--recursive", action="store_true", default=False)
     quant_parser = parser.add_mutually_exclusive_group(required=False)
@@ -219,4 +226,6 @@ def argparser():
     parser.add_argument("--alignment-threads", default=8, type=int)
     parser.add_argument("--mm2-preset", default='lr:hq', type=str)
     parser.add_argument('-v', '--verbose', action='count', default=0)
+    parser.add_argument('--save-relevance',action="store_true", default=False)
     return parser
+

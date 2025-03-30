@@ -1,5 +1,4 @@
 # general requirements
-python==3.10
 edlib
 fast-ctc-decode
 mappy
@@ -17,6 +16,7 @@ wheel
 # specific requirements
 torch==2.1.2
 # ont requirements
+ont-bonito
 ont-fast5-api
 ont-koi
 ont-remora

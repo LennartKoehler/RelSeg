@@ -5,15 +5,7 @@ def write_segmentation(read_id, sequence, segments, filename):
     with open(filename, "a") as f:
         for base, segment in zip(sequence, segments):
             f.write(f"{read_id}\t{base}")
-            for peak in segment:
-                if len(peak) == 2:
-                    if peak[-1] == -1.0:
-                        f.write(f"\t-1.0\t-1.0")
-                    else:
-                        f.write(f"\t{peak[0]}\t{peak[1]}")
-                       
-                else:
-                    f.write(f"\t{int(peak)}")
+            f.write(f"\t{int(segment[0])}\t{int(segment[1])}")
             f.write("\n")
 
 def get_segment_filename():
@@ -31,7 +23,7 @@ class LRP_Writer(Writer):
 
             segment_filename = get_segment_filename()
             with open(segment_filename, "w") as f:
-                f.write(f"read_id\tbase\tstart\n")
+                f.write(f"read_id\tbase\tstart\tend\n")
 
             for read, res in self.iterator:
 

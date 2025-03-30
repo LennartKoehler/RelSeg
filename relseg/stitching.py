@@ -2,7 +2,6 @@ import numpy as np
 import torch
 from bonito.util import stitch, concat
 
-
 def stitch_results(results, length, size, overlap, stride, key, reverse=False):
     """
     Stitch results together with a given overlap.
@@ -59,4 +58,48 @@ def stitch_segments_indices(chunks, chunksize, overlap, length, stride, reverse=
         ])
     segments = segments[~torch.isnan(segments)].view(-1, n_peaks, per_peak)
 
+    segments = untangle_segments(segments.numpy())
+
+    segments = make_end_dim(segments, length)
+
     return segments
+
+def make_end_dim(segments, length):
+    segments = np.stack([segments, np.roll(segments, shift=-1)], axis=-1)
+    segments[-1,1] = length
+    mask = np.any(segments == -1, axis=1)
+    segments[mask,:] = -1
+    return segments
+
+def untangle_segments(segments):
+    def best_fit(left, peaks, right):
+        mask = (peaks[:, 0] > left) & (peaks[:, 0] < right)
+        peaks = peaks[mask]
+        if len(peaks) == 0:
+            return -1,-1
+        best_idx = np.argmax(peaks[:,1])
+        return peaks[best_idx,:]
+    
+    def get_sort_shifts(arr):
+        sorted_indices = np.argsort(arr)  # Get the indices that would sort the array
+        original_indices = np.argsort(sorted_indices)  # Get the original positions after sorting
+        shifts = original_indices - np.arange(len(arr))  # Compute shifts
+        return np.abs(shifts)
+    
+    shifts = get_sort_shifts(segments[:,0,0])
+    while sum(shifts) != 0:
+        highest_shift = np.argmax(shifts)
+        shifts[highest_shift] = 0
+
+
+        left = np.max(segments[:highest_shift, 0, 0], initial=0) # max because there may be a 0 (no segment) in the one directly before/after, so just take the one that is not 0( since they are sorted its the max)
+        right = np.max(segments[:highest_shift+2, 0, 0], initial=0) # is it correct to set the initial for right to 0? i think this is never needed?
+        peaks = segments[highest_shift,:,:]
+
+        segments[highest_shift, 0, :] = best_fit(left, peaks, right)
+    # print(unsegmented)
+    #TODO flag each "deleted" segment in the pandas dataframe, dont actually delete them, but remove them from the sorting, then once all of the remaining segments are sorted
+    # go through the "deleted/ flagged" segments and see if any of the 5 peaks can be used to fit between the segment before and after, if it can, use it, if not, remove the
+    # segment start property and say "it cant be positioned", see how many are problematic, if not many ok, if many do something else
+    
+    return segments[:,0,0]

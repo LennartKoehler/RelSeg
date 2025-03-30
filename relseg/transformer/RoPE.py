@@ -3,7 +3,7 @@
 
 import torch
 
-import bonito.lrp.lxt_adjustments as lf
+import relseg.lxt_adjustments as lf
 
 
 

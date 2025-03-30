@@ -13,7 +13,7 @@ import math
 from .RMSNorm import RMSNorm
 from .RoPE import RotaryEmbedding
 
-import bonito.lrp.lxt_adjustments as lf
+import relseg.lxt_adjustments as lf
 
 
 

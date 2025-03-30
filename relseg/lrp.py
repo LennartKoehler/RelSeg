@@ -1,15 +1,15 @@
 import torch
 import numpy as np
-from bonito.lrp.lrp_composites import lxt_comp, zennit_comp1,zennit_comp2, zennit_comp3, zennit_comp4, zennit_comp_first_conv
 from bonito.util import chunk, batchify, unbatchify, half_supported
 from koi.decode import to_str
 from scipy.signal import find_peaks
-from bonito.lrp.stitching import stitch_results
-from bonito.lrp.search import run_beam_search, run_viterbi
+from relseg.stitching import stitch_results
+from relseg.ctc import run_beam_search, run_viterbi
+from relseg.lxt_composites import lxt_comp, zennit_comp1,zennit_comp2, zennit_comp3, zennit_comp4, zennit_comp_first_conv
 
 def fmt(stride, attrs, trimmed_samples, rna=False):
-    segments = attrs['segments'].numpy()
-    segments[:,:,0] += trimmed_samples
+    segments = attrs['segments']
+    segments[segments[:,1] !=-1, :] += trimmed_samples
     return {
         'stride': stride,
         'moves': attrs['moves'].numpy(),
