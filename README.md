@@ -1,6 +1,6 @@
 # RelSeg
 
-RelSeg aligns the basecalled sequence to the signal. It relies on the [Bonito] (https://github.com/nanoporetech/bonito) basecaller of ONT. The [LXT] (https://github.com/rachtibat/LRP-eXplains-Transformers) and [zennit] (https://github.com/chr5tphr/zennit) packages are used for the Layer-wise Relevance Propagation
+RelSeg aligns the basecalled sequence to the signal. It relies on the [Bonito](https://github.com/nanoporetech/bonito) basecaller of ONT. The [LXT](https://github.com/rachtibat/LRP-eXplains-Transformers) and [zennit](https://github.com/chr5tphr/zennit) packages are used for the Layer-wise Relevance Propagation
 
 ```bash
 $ pip install relseg
