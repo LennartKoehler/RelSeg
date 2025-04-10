@@ -1,13 +1,16 @@
 # RelSeg
+**Rel**evance Based **Seg**mentation of Nanopore Reads
+RelSeg is used to align the basecalled sequence to the signal of nanopore reads. It relies on the [bonito](https://github.com/nanoporetech/bonito) basecaller of ONT. The [lxt](https://github.com/rachtibat/LRP-eXplains-Transformers) and [zennit](https://github.com/chr5tphr/zennit) packages are used for the Layer-wise Relevance Propagation
 
-RelSeg aligns the basecalled sequence to the signal. It relies on the [bonito](https://github.com/nanoporetech/bonito) basecaller of ONT. The [lxt](https://github.com/rachtibat/LRP-eXplains-Transformers) and [zennit](https://github.com/chr5tphr/zennit) packages are used for the Layer-wise Relevance Propagation
-
+## Installation
 ```bash
 $ pip install relseg
 ```
+## Usage
 
 ```bash
 $ relseg rna004_130bps_sup@v5.0.0 data/reads --rna > basecall.txt
+
 $ relseg rna004_130bps_sup@v5.0.0 data/reads --rna --save_relevance > basecall.txt
 ```
 
@@ -23,7 +26,7 @@ A transformer model which no longer requires `flash_attn` is implemented.
 | start    | The start position of the base in the signal alignment (-1 for not aligned)            |
 | end      | The end position of the base in the signal alignment (-1 for not aligned)                  |
 
-Output example:
+### Example Output
 ```tsv
 read_id	base	start	end
 5a729d16-b785-4e8c-ad91-314d862d980b	T	140	157
@@ -32,4 +35,14 @@ read_id	base	start	end
 5a729d16-b785-4e8c-ad91-314d862d980b	C	-1	-1
 ```
 
-The normal basecalls including the moves table are also output
+The normal basecalls including the moves table are also output.
+
+## Relevance for Consecutive Bases
+![Description of the image](figures/relevance.png)
+
+
+## Sequence Aligned to Signal
+![Description of the image](figures/segmentation.png)
+
+
+
