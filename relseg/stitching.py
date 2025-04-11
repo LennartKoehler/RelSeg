@@ -97,9 +97,6 @@ def untangle_segments(segments):
         peaks = segments[highest_shift,:,:]
 
         segments[highest_shift, 0, :] = best_fit(left, peaks, right)
-    # print(unsegmented)
-    #TODO flag each "deleted" segment in the pandas dataframe, dont actually delete them, but remove them from the sorting, then once all of the remaining segments are sorted
-    # go through the "deleted/ flagged" segments and see if any of the 5 peaks can be used to fit between the segment before and after, if it can, use it, if not, remove the
-    # segment start property and say "it cant be positioned", see how many are problematic, if not many ok, if many do something else
+
     
     return segments[:,0,0]

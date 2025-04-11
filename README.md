@@ -1,6 +1,9 @@
 # RelSeg
-**Rel**evance Based **Seg**mentation of Nanopore Reads
-RelSeg is used to align the basecalled sequence to the signal of nanopore reads. It relies on the [bonito](https://github.com/nanoporetech/bonito) basecaller of ONT. The [lxt](https://github.com/rachtibat/LRP-eXplains-Transformers) and [zennit](https://github.com/chr5tphr/zennit) packages are used for the Layer-wise Relevance Propagation
+**Rel**evance Based **Seg**mentation of Nanopore Reads  
+  
+RelSeg is used to align the basecalled sequence to the signal of nanopore reads. It relies on the [bonito](https://github.com/nanoporetech/bonito) basecaller of ONT. The [lxt](https://github.com/rachtibat/LRP-eXplains-Transformers) and [zennit](https://github.com/chr5tphr/zennit) packages are used for the Layer-wise Relevance Propagation.  
+A transformer model which no longer requires `flash_attn` is implemented. 
+
 
 ## Installation
 ```bash
@@ -9,12 +12,11 @@ $ pip install relseg
 ## Usage
 
 ```bash
-$ relseg rna004_130bps_sup@v5.0.0 data/reads --rna > basecall.txt
+$ relseg rna004_130bps_sup@v5.0.0 /path/data/reads --rna > basecall.txt
 
-$ relseg rna004_130bps_sup@v5.0.0 data/reads --rna --save_relevance > basecall.txt
+$ relseg rna004_130bps_sup@v5.0.0 /path/data/reads --rna --save_relevance > basecall.txt
 ```
 
-A transformer model which no longer requires `flash_attn` is implemented. 
 
 ## Output
 

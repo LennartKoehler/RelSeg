@@ -1,7 +1,7 @@
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 from relseg import main_lrp_entry
-__version__ = "0.1.5"
+__version__ = "0.1.0"
 
 def main():
     # Create the main argument parser

@@ -183,7 +183,6 @@ def basecall_and_lrp(model, reads, search_algorithm, chunksize=4000, overlap=100
     """
     Basecalls a set of reads.
     """
-    # reads = (read for read in reads if read.read_id == "3b73c140-6ce2-461a-a36a-af28e2afb77f")
 
     chunks = (
         ((read, 0, read.signal.shape[-1]), chunk(torch.from_numpy(read.signal), chunksize, overlap))
