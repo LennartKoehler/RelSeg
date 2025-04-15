@@ -1,0 +1,25 @@
+# general requirements
+edlib
+fast-ctc-decode
+mappy
+networkx     # required for py3.8 torch compatability
+numpy<2      # numpy~=2 is currently unreleased, it may have breaking changes
+pandas<3     # pandas~=3 is currently unreleased, it may have breaking changes
+parasail
+pod5
+pysam
+python-dateutil
+requests
+toml
+tqdm
+wheel
+# specific requirements
+torch==2.1.2
+# ont requirements
+ont-bonito
+ont-fast5-api
+ont-koi
+ont-remora
+# lrp requirements
+zennit==0.5.1
+lxt==0.6.1
